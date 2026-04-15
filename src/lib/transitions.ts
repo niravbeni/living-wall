@@ -14,9 +14,9 @@ export interface TransitionConfig {
 
 const crossfade: TransitionConfig = {
   variants: {
-    enter: () => ({ opacity: 0 }),
-    center: { opacity: 1 },
-    exit: () => ({ opacity: 0 }),
+    enter: () => ({ opacity: 0, zIndex: 1 }),
+    center: { opacity: 1, zIndex: 1 },
+    exit: () => ({ opacity: 0, zIndex: 0 }),
   },
   transition: { duration: 0.8, ease: "easeInOut" },
 };
@@ -25,12 +25,12 @@ const slide: TransitionConfig = {
   variants: {
     enter: (d: number) => ({
       x: d > 0 ? "100%" : "-100%",
-      opacity: 1,
+      zIndex: 1,
     }),
-    center: { x: 0, opacity: 1 },
+    center: { x: 0, zIndex: 1 },
     exit: (d: number) => ({
       x: d > 0 ? "-100%" : "100%",
-      opacity: 1,
+      zIndex: 0,
     }),
   },
   transition: { duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] },
@@ -38,9 +38,9 @@ const slide: TransitionConfig = {
 
 const zoomFade: TransitionConfig = {
   variants: {
-    enter: () => ({ scale: 0.9, opacity: 0 }),
-    center: { scale: 1, opacity: 1 },
-    exit: () => ({ scale: 1.1, opacity: 0 }),
+    enter: () => ({ scale: 0.9, opacity: 0, zIndex: 1 }),
+    center: { scale: 1, opacity: 1, zIndex: 1 },
+    exit: () => ({ scale: 1.1, opacity: 0, zIndex: 0 }),
   },
   transition: { duration: 0.7, ease: "easeInOut" },
 };
@@ -52,13 +52,15 @@ const cardStack: TransitionConfig = {
       scale: 0.85,
       rotateY: d > 0 ? -15 : 15,
       opacity: 0,
+      zIndex: 1,
     }),
-    center: { x: 0, scale: 1, rotateY: 0, opacity: 1 },
+    center: { x: 0, scale: 1, rotateY: 0, opacity: 1, zIndex: 1 },
     exit: (d: number) => ({
       x: d > 0 ? "-80%" : "80%",
       scale: 0.85,
       rotateY: d > 0 ? 15 : -15,
       opacity: 0,
+      zIndex: 0,
     }),
   },
   transition: { duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] },
