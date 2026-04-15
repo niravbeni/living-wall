@@ -5,7 +5,11 @@ import { useDropzone } from "react-dropzone";
 import { supabase, getPublicUrl } from "@/lib/supabase";
 import { ACCEPTED_FILE_TYPES, MAX_FILE_SIZE } from "@/lib/types";
 import type { CarouselItem } from "@/lib/types";
-import { compressVideo, shouldCompress } from "@/lib/compress-video";
+import {
+  compressVideo,
+  shouldCompress,
+  type CompressionPhase,
+} from "@/lib/compress-video";
 import { Upload, Loader2, AlertCircle } from "lucide-react";
 
 interface MediaUploaderProps {
@@ -14,16 +18,23 @@ interface MediaUploaderProps {
   onUpload: (item: Omit<CarouselItem, "id" | "created_at">) => Promise<void>;
 }
 
-type UploadPhase = "idle" | "compressing" | "uploading";
+const PHASE_LABELS: Record<CompressionPhase, string> = {
+  "loading-engine": "Loading video engine (first time only)...",
+  "reading-file": "Reading file...",
+  compressing: "Compressing video to 1080p...",
+  finalizing: "Finalizing...",
+};
+
+type UploaderState = "idle" | "processing" | "uploading";
 
 export function MediaUploader({
   itemCount,
   defaultDuration,
   onUpload,
 }: MediaUploaderProps) {
-  const [phase, setPhase] = useState<UploadPhase>("idle");
+  const [state, setState] = useState<UploaderState>("idle");
   const [statusText, setStatusText] = useState("");
-  const [compressPercent, setCompressPercent] = useState(0);
+  const [compressPercent, setCompressPercent] = useState(-1);
   const [error, setError] = useState("");
 
   const onDrop = useCallback(
@@ -34,21 +45,32 @@ export function MediaUploader({
 
       for (let i = 0; i < acceptedFiles.length; i++) {
         let file = acceptedFiles[i];
-        const label = `${i + 1}/${acceptedFiles.length}: ${file.name}`;
+        const label = `(${i + 1}/${acceptedFiles.length}) ${file.name}`;
 
         try {
           if (shouldCompress(file)) {
-            setPhase("compressing");
-            setCompressPercent(0);
-            setStatusText(`Compressing ${label}`);
+            setState("processing");
+            setCompressPercent(-1);
+            setStatusText(PHASE_LABELS["loading-engine"]);
 
-            file = await compressVideo(file, (pct) => {
-              setCompressPercent(pct);
+            file = await compressVideo(file, {
+              onPhase: (phase) => {
+                setStatusText(PHASE_LABELS[phase]);
+                if (phase === "compressing") {
+                  setCompressPercent(0);
+                } else {
+                  setCompressPercent(-1);
+                }
+              },
+              onProgress: (pct) => {
+                setCompressPercent(pct);
+              },
             });
           }
 
-          setPhase("uploading");
+          setState("uploading");
           setStatusText(`Uploading ${label}`);
+          setCompressPercent(-1);
 
           const ext = file.name.split(".").pop();
           const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
@@ -79,9 +101,9 @@ export function MediaUploader({
         }
       }
 
-      setPhase("idle");
+      setState("idle");
       setStatusText("");
-      setCompressPercent(0);
+      setCompressPercent(-1);
     },
     [itemCount, defaultDuration, onUpload]
   );
@@ -90,14 +112,15 @@ export function MediaUploader({
     onDrop,
     accept: ACCEPTED_FILE_TYPES,
     maxSize: MAX_FILE_SIZE,
-    disabled: phase !== "idle",
+    disabled: state !== "idle",
     onDropRejected: (rejections) => {
       const msg = rejections[0]?.errors[0]?.message ?? "File rejected";
       setError(msg);
     },
   });
 
-  const busy = phase !== "idle";
+  const busy = state !== "idle";
+  const showProgressBar = compressPercent >= 0;
 
   return (
     <div className="space-y-3">
@@ -114,8 +137,10 @@ export function MediaUploader({
         {busy ? (
           <div className="flex flex-col items-center gap-3 w-full">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">{statusText}</p>
-            {phase === "compressing" && (
+            <p className="text-sm text-muted-foreground text-center">
+              {statusText}
+            </p>
+            {showProgressBar && (
               <div className="w-full max-w-xs">
                 <div className="h-2 rounded-full bg-muted overflow-hidden">
                   <div
@@ -124,7 +149,7 @@ export function MediaUploader({
                   />
                 </div>
                 <p className="text-xs text-muted-foreground mt-1.5 text-center">
-                  {compressPercent}% compressed
+                  {compressPercent}%
                 </p>
               </div>
             )}

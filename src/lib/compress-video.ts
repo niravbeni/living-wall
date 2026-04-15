@@ -3,9 +3,17 @@ import { fetchFile, toBlobURL } from "@ffmpeg/util";
 
 let ffmpeg: FFmpeg | null = null;
 
-async function getFFmpeg(): Promise<FFmpeg> {
+export type CompressionPhase = "loading-engine" | "reading-file" | "compressing" | "finalizing";
+
+interface CompressCallbacks {
+  onPhase?: (phase: CompressionPhase) => void;
+  onProgress?: (percent: number) => void;
+}
+
+async function getFFmpeg(onPhase?: (phase: CompressionPhase) => void): Promise<FFmpeg> {
   if (ffmpeg && ffmpeg.loaded) return ffmpeg;
 
+  onPhase?.("loading-engine");
   ffmpeg = new FFmpeg();
 
   const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm";
@@ -23,18 +31,24 @@ async function getFFmpeg(): Promise<FFmpeg> {
 
 export async function compressVideo(
   file: File,
-  onProgress?: (percent: number) => void
+  callbacks?: CompressCallbacks
 ): Promise<File> {
-  const ff = await getFFmpeg();
+  const ff = await getFFmpeg(callbacks?.onPhase);
 
   const inputName = "input" + getExtension(file.name);
   const outputName = "output.mp4";
 
+  callbacks?.onPhase?.("reading-file");
+
   ff.on("progress", ({ progress }) => {
-    onProgress?.(Math.min(Math.round(progress * 100), 100));
+    const pct = Math.min(Math.max(Math.round(progress * 100), 0), 100);
+    callbacks?.onProgress?.(pct);
   });
 
   await ff.writeFile(inputName, await fetchFile(file));
+
+  callbacks?.onPhase?.("compressing");
+  callbacks?.onProgress?.(0);
 
   await ff.exec([
     "-i",
@@ -56,9 +70,10 @@ export async function compressVideo(
     outputName,
   ]);
 
+  callbacks?.onPhase?.("finalizing");
+
   const data = await ff.readFile(outputName);
 
-  // Clean up virtual filesystem
   await ff.deleteFile(inputName);
   await ff.deleteFile(outputName);
 
