@@ -47,8 +47,6 @@ export const ACCEPTED_IMAGE_TYPES = {
 export const ACCEPTED_VIDEO_TYPES = {
   "video/mp4": [".mp4"],
   "video/webm": [".webm"],
-  "video/quicktime": [".mov"],
-  "video/x-msvideo": [".avi"],
 };
 
 export const ACCEPTED_FILE_TYPES = {
@@ -56,4 +54,4 @@ export const ACCEPTED_FILE_TYPES = {
   ...ACCEPTED_VIDEO_TYPES,
 };
 
-export const MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024; // 2GB (compressed before upload)
+export const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB

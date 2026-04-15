@@ -5,11 +5,6 @@ import { useDropzone } from "react-dropzone";
 import { supabase, getPublicUrl } from "@/lib/supabase";
 import { ACCEPTED_FILE_TYPES, MAX_FILE_SIZE } from "@/lib/types";
 import type { CarouselItem } from "@/lib/types";
-import {
-  compressVideo,
-  shouldCompress,
-  type CompressionPhase,
-} from "@/lib/compress-video";
 import { Upload, Loader2, AlertCircle } from "lucide-react";
 
 interface MediaUploaderProps {
@@ -18,60 +13,27 @@ interface MediaUploaderProps {
   onUpload: (item: Omit<CarouselItem, "id" | "created_at">) => Promise<void>;
 }
 
-const PHASE_LABELS: Record<CompressionPhase, string> = {
-  "loading-engine": "Loading video engine (first time only)...",
-  "reading-file": "Reading file...",
-  compressing: "Compressing video to 1080p...",
-  finalizing: "Finalizing...",
-};
-
-type UploaderState = "idle" | "processing" | "uploading";
-
 export function MediaUploader({
   itemCount,
   defaultDuration,
   onUpload,
 }: MediaUploaderProps) {
-  const [state, setState] = useState<UploaderState>("idle");
-  const [statusText, setStatusText] = useState("");
-  const [compressPercent, setCompressPercent] = useState(-1);
-  const [error, setError] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState<string>("");
+  const [error, setError] = useState<string>("");
 
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
       if (acceptedFiles.length === 0) return;
 
+      setUploading(true);
       setError("");
 
       for (let i = 0; i < acceptedFiles.length; i++) {
-        let file = acceptedFiles[i];
-        const label = `(${i + 1}/${acceptedFiles.length}) ${file.name}`;
+        const file = acceptedFiles[i];
+        setProgress(`Uploading ${i + 1}/${acceptedFiles.length}: ${file.name}`);
 
         try {
-          if (shouldCompress(file)) {
-            setState("processing");
-            setCompressPercent(-1);
-            setStatusText(PHASE_LABELS["loading-engine"]);
-
-            file = await compressVideo(file, {
-              onPhase: (phase) => {
-                setStatusText(PHASE_LABELS[phase]);
-                if (phase === "compressing") {
-                  setCompressPercent(0);
-                } else {
-                  setCompressPercent(-1);
-                }
-              },
-              onProgress: (pct) => {
-                setCompressPercent(pct);
-              },
-            });
-          }
-
-          setState("uploading");
-          setStatusText(`Uploading ${label}`);
-          setCompressPercent(-1);
-
           const ext = file.name.split(".").pop();
           const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
@@ -95,15 +57,12 @@ export function MediaUploader({
           });
         } catch (err) {
           console.error("Upload failed:", err);
-          setError(
-            `Failed to process ${file.name}: ${err instanceof Error ? err.message : "Unknown error"}`
-          );
+          setError(`Failed to upload ${file.name}`);
         }
       }
 
-      setState("idle");
-      setStatusText("");
-      setCompressPercent(-1);
+      setUploading(false);
+      setProgress("");
     },
     [itemCount, defaultDuration, onUpload]
   );
@@ -112,15 +71,12 @@ export function MediaUploader({
     onDrop,
     accept: ACCEPTED_FILE_TYPES,
     maxSize: MAX_FILE_SIZE,
-    disabled: state !== "idle",
+    disabled: uploading,
     onDropRejected: (rejections) => {
       const msg = rejections[0]?.errors[0]?.message ?? "File rejected";
       setError(msg);
     },
   });
-
-  const busy = state !== "idle";
-  const showProgressBar = compressPercent >= 0;
 
   return (
     <div className="space-y-3">
@@ -130,30 +86,15 @@ export function MediaUploader({
           relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed
           p-8 transition-all cursor-pointer
           ${isDragActive ? "border-primary bg-primary/5 scale-[1.01]" : "border-muted-foreground/25 hover:border-muted-foreground/50 hover:bg-muted/50"}
-          ${busy ? "pointer-events-none opacity-60" : ""}
+          ${uploading ? "pointer-events-none opacity-60" : ""}
         `}
       >
         <input {...getInputProps()} />
-        {busy ? (
-          <div className="flex flex-col items-center gap-3 w-full">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            <p className="text-sm text-muted-foreground text-center">
-              {statusText}
-            </p>
-            {showProgressBar && (
-              <div className="w-full max-w-xs">
-                <div className="h-2 rounded-full bg-muted overflow-hidden">
-                  <div
-                    className="h-full bg-primary transition-[width] duration-300 ease-out rounded-full"
-                    style={{ width: `${compressPercent}%` }}
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground mt-1.5 text-center">
-                  {compressPercent}%
-                </p>
-              </div>
-            )}
-          </div>
+        {uploading ? (
+          <>
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mb-3" />
+            <p className="text-sm text-muted-foreground">{progress}</p>
+          </>
         ) : (
           <>
             <Upload className="h-8 w-8 text-muted-foreground mb-3" />
@@ -161,10 +102,7 @@ export function MediaUploader({
               {isDragActive ? "Drop files here" : "Drag & drop media files"}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              Images (JPG, PNG, WebP, GIF) or Videos (MP4, WebM, MOV, AVI)
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Videos are automatically compressed to 1080p
+              Images (JPG, PNG, WebP, GIF) or Videos (MP4, WebM) up to 100MB
             </p>
           </>
         )}
@@ -172,7 +110,7 @@ export function MediaUploader({
       {error && (
         <div className="flex items-center gap-2 text-sm text-destructive">
           <AlertCircle className="h-4 w-4 shrink-0" />
-          <span>{error}</span>
+          {error}
         </div>
       )}
     </div>
