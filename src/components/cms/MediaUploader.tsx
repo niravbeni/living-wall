@@ -5,6 +5,7 @@ import { useDropzone } from "react-dropzone";
 import { supabase, getPublicUrl } from "@/lib/supabase";
 import { ACCEPTED_FILE_TYPES, MAX_FILE_SIZE } from "@/lib/types";
 import type { CarouselItem } from "@/lib/types";
+import { compressVideo, shouldCompress } from "@/lib/compress-video";
 import { Upload, Loader2, AlertCircle } from "lucide-react";
 
 interface MediaUploaderProps {
@@ -13,27 +14,42 @@ interface MediaUploaderProps {
   onUpload: (item: Omit<CarouselItem, "id" | "created_at">) => Promise<void>;
 }
 
+type UploadPhase = "idle" | "compressing" | "uploading";
+
 export function MediaUploader({
   itemCount,
   defaultDuration,
   onUpload,
 }: MediaUploaderProps) {
-  const [uploading, setUploading] = useState(false);
-  const [progress, setProgress] = useState<string>("");
-  const [error, setError] = useState<string>("");
+  const [phase, setPhase] = useState<UploadPhase>("idle");
+  const [statusText, setStatusText] = useState("");
+  const [compressPercent, setCompressPercent] = useState(0);
+  const [error, setError] = useState("");
 
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
       if (acceptedFiles.length === 0) return;
 
-      setUploading(true);
       setError("");
 
       for (let i = 0; i < acceptedFiles.length; i++) {
-        const file = acceptedFiles[i];
-        setProgress(`Uploading ${i + 1}/${acceptedFiles.length}: ${file.name}`);
+        let file = acceptedFiles[i];
+        const label = `${i + 1}/${acceptedFiles.length}: ${file.name}`;
 
         try {
+          if (shouldCompress(file)) {
+            setPhase("compressing");
+            setCompressPercent(0);
+            setStatusText(`Compressing ${label}`);
+
+            file = await compressVideo(file, (pct) => {
+              setCompressPercent(pct);
+            });
+          }
+
+          setPhase("uploading");
+          setStatusText(`Uploading ${label}`);
+
           const ext = file.name.split(".").pop();
           const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
@@ -57,12 +73,15 @@ export function MediaUploader({
           });
         } catch (err) {
           console.error("Upload failed:", err);
-          setError(`Failed to upload ${file.name}`);
+          setError(
+            `Failed to process ${file.name}: ${err instanceof Error ? err.message : "Unknown error"}`
+          );
         }
       }
 
-      setUploading(false);
-      setProgress("");
+      setPhase("idle");
+      setStatusText("");
+      setCompressPercent(0);
     },
     [itemCount, defaultDuration, onUpload]
   );
@@ -71,12 +90,14 @@ export function MediaUploader({
     onDrop,
     accept: ACCEPTED_FILE_TYPES,
     maxSize: MAX_FILE_SIZE,
-    disabled: uploading,
+    disabled: phase !== "idle",
     onDropRejected: (rejections) => {
       const msg = rejections[0]?.errors[0]?.message ?? "File rejected";
       setError(msg);
     },
   });
+
+  const busy = phase !== "idle";
 
   return (
     <div className="space-y-3">
@@ -86,15 +107,28 @@ export function MediaUploader({
           relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed
           p-8 transition-all cursor-pointer
           ${isDragActive ? "border-primary bg-primary/5 scale-[1.01]" : "border-muted-foreground/25 hover:border-muted-foreground/50 hover:bg-muted/50"}
-          ${uploading ? "pointer-events-none opacity-60" : ""}
+          ${busy ? "pointer-events-none opacity-60" : ""}
         `}
       >
         <input {...getInputProps()} />
-        {uploading ? (
-          <>
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mb-3" />
-            <p className="text-sm text-muted-foreground">{progress}</p>
-          </>
+        {busy ? (
+          <div className="flex flex-col items-center gap-3 w-full">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">{statusText}</p>
+            {phase === "compressing" && (
+              <div className="w-full max-w-xs">
+                <div className="h-2 rounded-full bg-muted overflow-hidden">
+                  <div
+                    className="h-full bg-primary transition-[width] duration-300 ease-out rounded-full"
+                    style={{ width: `${compressPercent}%` }}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground mt-1.5 text-center">
+                  {compressPercent}% compressed
+                </p>
+              </div>
+            )}
+          </div>
         ) : (
           <>
             <Upload className="h-8 w-8 text-muted-foreground mb-3" />
@@ -102,7 +136,10 @@ export function MediaUploader({
               {isDragActive ? "Drop files here" : "Drag & drop media files"}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              Images (JPG, PNG, WebP, GIF) or Videos (MP4, WebM) up to 100MB
+              Images (JPG, PNG, WebP, GIF) or Videos (MP4, WebM, MOV, AVI)
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Videos are automatically compressed to 1080p
             </p>
           </>
         )}
@@ -110,7 +147,7 @@ export function MediaUploader({
       {error && (
         <div className="flex items-center gap-2 text-sm text-destructive">
           <AlertCircle className="h-4 w-4 shrink-0" />
-          {error}
+          <span>{error}</span>
         </div>
       )}
     </div>
