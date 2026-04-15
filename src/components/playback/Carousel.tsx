@@ -8,13 +8,12 @@ import { useFullscreen } from "@/hooks/useFullscreen";
 import { CarouselItemDisplay } from "./CarouselItem";
 import { TransitionWrapper } from "./TransitionWrapper";
 import { ProgressBar } from "./ProgressBar";
-import { Loader2, Maximize, Minimize, Pause } from "lucide-react";
 
 export function Carousel() {
   const { items, loading: itemsLoading } = useCarouselItems();
   const { settings, loading: settingsLoading } = useSettings();
   const containerRef = useRef<HTMLDivElement>(null);
-  const { isFullscreen, toggleFullscreen } = useFullscreen(containerRef);
+  const { toggleFullscreen } = useFullscreen(containerRef);
 
   const {
     currentIndex,
@@ -25,7 +24,6 @@ export function Carousel() {
     goToNext,
     goToPrev,
     onVideoEnded,
-    totalItems,
   } = useCarouselPlayback(items, settings);
 
   const handleKeyDown = useCallback(
@@ -58,25 +56,11 @@ export function Carousel() {
   const loading = itemsLoading || settingsLoading;
 
   if (loading) {
-    return (
-      <div className="flex h-screen w-screen items-center justify-center bg-black">
-        <Loader2 className="h-10 w-10 animate-spin text-white/40" />
-      </div>
-    );
+    return <div className="h-screen w-screen bg-black" />;
   }
 
-  if (totalItems === 0) {
-    return (
-      <div className="flex h-screen w-screen flex-col items-center justify-center bg-black text-white/60">
-        <p className="text-xl font-light">No content yet</p>
-        <p className="mt-2 text-sm">
-          Add items via{" "}
-          <a href="/cms" className="underline hover:text-white/80">
-            /cms
-          </a>
-        </p>
-      </div>
-    );
+  if (items.length === 0) {
+    return <div className="h-screen w-screen bg-black" />;
   }
 
   const allowClickAdvance = !settings.auto_loop || paused;
@@ -84,7 +68,7 @@ export function Carousel() {
   return (
     <div
       ref={containerRef}
-      className="relative h-screen w-screen overflow-hidden bg-black cursor-none group"
+      className="relative h-screen w-screen overflow-hidden bg-black cursor-none"
       onClick={allowClickAdvance ? goToNext : undefined}
     >
       {currentItem && (
@@ -106,41 +90,6 @@ export function Carousel() {
         progress={progress}
         visible={settings.show_progress_bar && !paused}
       />
-
-      {/* Paused indicator */}
-      {paused && (
-        <div className="absolute top-4 left-4 z-30 flex items-center gap-2 rounded-full bg-black/50 px-3 py-1.5 text-xs text-white/70 animate-in fade-in duration-300">
-          <Pause className="h-3 w-3" />
-          Paused — resuming shortly
-        </div>
-      )}
-
-      {/* Fullscreen toggle — visible on hover */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          toggleFullscreen();
-        }}
-        className="absolute top-4 right-4 z-30 rounded-full bg-black/40 p-2 text-white/60 opacity-0 transition-opacity group-hover:opacity-100 hover:text-white hover:bg-black/60 cursor-pointer"
-      >
-        {isFullscreen ? (
-          <Minimize className="h-5 w-5" />
-        ) : (
-          <Maximize className="h-5 w-5" />
-        )}
-      </button>
-
-      {/* Item counter — visible on hover */}
-      <div className="absolute bottom-4 right-4 z-30 rounded-full bg-black/40 px-3 py-1 text-xs text-white/60 opacity-0 transition-opacity group-hover:opacity-100">
-        {currentIndex + 1} / {totalItems}
-      </div>
-
-      {/* Manual mode hint — visible on hover */}
-      {allowClickAdvance && !paused && (
-        <div className="absolute bottom-4 left-4 z-30 rounded-full bg-black/40 px-3 py-1 text-xs text-white/40 opacity-0 transition-opacity group-hover:opacity-100">
-          Space / Click to advance
-        </div>
-      )}
     </div>
   );
 }
