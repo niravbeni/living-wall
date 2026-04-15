@@ -35,16 +35,15 @@ export default function CMSContent() {
             <h1 className="text-lg font-semibold tracking-tight">
               Living Wall
             </h1>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => window.open("/", "_blank")}
-              >
-                <ExternalLink className="h-4 w-4 mr-1.5" />
-                Preview
-              </Button>
-            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="cursor-pointer"
+              onClick={() => window.open("/", "_blank")}
+            >
+              <ExternalLink className="h-4 w-4 mr-1.5" />
+              Preview
+            </Button>
           </div>
         </header>
 
@@ -52,7 +51,7 @@ export default function CMSContent() {
           <div className="flex gap-1 mb-6 p-1 bg-muted rounded-lg">
             <button
               onClick={() => setActiveTab("content")}
-              className={`flex-1 flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+              className={`flex-1 flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors cursor-pointer ${
                 activeTab === "content"
                   ? "bg-background text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
@@ -63,7 +62,7 @@ export default function CMSContent() {
             </button>
             <button
               onClick={() => setActiveTab("settings")}
-              className={`flex-1 flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+              className={`flex-1 flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors cursor-pointer ${
                 activeTab === "settings"
                   ? "bg-background text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"

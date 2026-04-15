@@ -28,20 +28,25 @@ export function GlobalSettings({ settings, onUpdate }: GlobalSettingsProps) {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <Label>Auto Loop</Label>
+              <Label htmlFor="auto-loop" className="cursor-pointer">
+                Auto Loop
+              </Label>
               <p className="text-xs text-muted-foreground mt-0.5">
                 Automatically advance through items
               </p>
             </div>
             <Switch
+              id="auto-loop"
+              className="cursor-pointer"
               checked={settings.auto_loop}
               onCheckedChange={(checked) => onUpdate({ auto_loop: checked })}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Default Duration (seconds)</Label>
+            <Label htmlFor="default-duration">Default Duration (seconds)</Label>
             <Input
+              id="default-duration"
               type="number"
               min={1}
               max={120}
@@ -73,7 +78,7 @@ export function GlobalSettings({ settings, onUpdate }: GlobalSettingsProps) {
                 onUpdate({ transition_type: value as TransitionType })
               }
             >
-              <SelectTrigger>
+              <SelectTrigger className="cursor-pointer">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -83,7 +88,11 @@ export function GlobalSettings({ settings, onUpdate }: GlobalSettingsProps) {
                     string,
                   ][]
                 ).map(([value, label]) => (
-                  <SelectItem key={value} value={value}>
+                  <SelectItem
+                    key={value}
+                    value={value}
+                    className="cursor-pointer"
+                  >
                     {label}
                   </SelectItem>
                 ))}
@@ -99,9 +108,14 @@ export function GlobalSettings({ settings, onUpdate }: GlobalSettingsProps) {
               </span>
             </div>
             <Slider
+              className="cursor-pointer"
               value={[settings.transition_duration_ms]}
               onValueChange={(value) =>
-                onUpdate({ transition_duration_ms: Array.isArray(value) ? value[0] : value })
+                onUpdate({
+                  transition_duration_ms: Array.isArray(value)
+                    ? value[0]
+                    : value,
+                })
               }
               min={200}
               max={2000}
@@ -121,12 +135,16 @@ export function GlobalSettings({ settings, onUpdate }: GlobalSettingsProps) {
         <h3 className="text-sm font-semibold mb-4">Display</h3>
         <div className="flex items-center justify-between">
           <div>
-            <Label>Progress Bar</Label>
+            <Label htmlFor="progress-bar" className="cursor-pointer">
+              Progress Bar
+            </Label>
             <p className="text-xs text-muted-foreground mt-0.5">
               Show progress indicator on playback
             </p>
           </div>
           <Switch
+            id="progress-bar"
+            className="cursor-pointer"
             checked={settings.show_progress_bar}
             onCheckedChange={(checked) =>
               onUpdate({ show_progress_bar: checked })

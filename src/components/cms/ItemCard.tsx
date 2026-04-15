@@ -56,9 +56,13 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
 
   return (
     <Card ref={setNodeRef} style={style} className="overflow-hidden">
-      <div className="flex items-center gap-3 p-3">
+      <div
+        className="flex items-center gap-3 p-3 cursor-pointer hover:bg-muted/40 transition-colors"
+        onClick={() => setExpanded(!expanded)}
+      >
         <button
           className="cursor-grab active:cursor-grabbing touch-none text-muted-foreground hover:text-foreground transition-colors"
+          onClick={(e) => e.stopPropagation()}
           {...attributes}
           {...listeners}
         >
@@ -81,6 +85,11 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
               className="h-full w-full object-cover"
             />
           )}
+          {item.type === "video" && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+              <Video className="h-4 w-4 text-white/80" />
+            </div>
+          )}
         </div>
 
         <div className="flex-1 min-w-0">
@@ -102,22 +111,20 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
           </div>
         </div>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          className="shrink-0"
-          onClick={() => setExpanded(!expanded)}
-        >
+        <div className="shrink-0 text-muted-foreground">
           {expanded ? (
             <ChevronUp className="h-4 w-4" />
           ) : (
             <ChevronDown className="h-4 w-4" />
           )}
-        </Button>
+        </div>
       </div>
 
       {expanded && (
-        <div className="border-t px-4 py-4 space-y-4 bg-muted/30">
+        <div
+          className="border-t px-4 py-4 space-y-4 bg-muted/30"
+          onClick={(e) => e.stopPropagation()}
+        >
           <div className="space-y-2">
             <Label htmlFor={`title-${item.id}`}>Title</Label>
             <Input
@@ -148,9 +155,12 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
 
           {item.type === "video" && (
             <div className="flex items-center justify-between">
-              <Label htmlFor={`loop-${item.id}`}>Loop video</Label>
+              <Label htmlFor={`loop-${item.id}`} className="cursor-pointer">
+                Loop video
+              </Label>
               <Switch
                 id={`loop-${item.id}`}
+                className="cursor-pointer"
                 checked={item.video_loop}
                 onCheckedChange={(checked) =>
                   onUpdate(item.id, { video_loop: checked })
@@ -164,7 +174,7 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
             size="sm"
             onClick={handleDelete}
             disabled={deleting}
-            className="w-full"
+            className="w-full cursor-pointer"
           >
             <Trash2 className="h-4 w-4 mr-2" />
             {deleting ? "Deleting..." : "Delete Item"}

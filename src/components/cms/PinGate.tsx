@@ -59,7 +59,7 @@ export function PinGate({ children }: PinGateProps) {
         {error && (
           <p className="text-sm text-destructive">Incorrect PIN</p>
         )}
-        <Button type="submit" className="w-full">
+        <Button type="submit" className="w-full cursor-pointer">
           Enter
         </Button>
       </form>
