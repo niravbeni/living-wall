@@ -8,7 +8,7 @@ import { useFullscreen } from "@/hooks/useFullscreen";
 import { CarouselItemDisplay } from "./CarouselItem";
 import { TransitionWrapper } from "./TransitionWrapper";
 import { ProgressBar } from "./ProgressBar";
-import { Loader2, Maximize, Minimize } from "lucide-react";
+import { Loader2, Maximize, Minimize, Pause } from "lucide-react";
 
 export function Carousel() {
   const { items, loading: itemsLoading } = useCarouselItems();
@@ -21,6 +21,7 @@ export function Carousel() {
     currentItem,
     progress,
     direction,
+    paused,
     goToNext,
     goToPrev,
     onVideoEnded,
@@ -78,11 +79,13 @@ export function Carousel() {
     );
   }
 
+  const allowClickAdvance = !settings.auto_loop || paused;
+
   return (
     <div
       ref={containerRef}
       className="relative h-screen w-screen overflow-hidden bg-black cursor-none group"
-      onClick={settings.auto_loop ? undefined : goToNext}
+      onClick={allowClickAdvance ? goToNext : undefined}
     >
       {currentItem && (
         <TransitionWrapper
@@ -101,10 +104,18 @@ export function Carousel() {
 
       <ProgressBar
         progress={progress}
-        visible={settings.show_progress_bar}
+        visible={settings.show_progress_bar && !paused}
       />
 
-      {/* Fullscreen toggle - visible on hover */}
+      {/* Paused indicator */}
+      {paused && (
+        <div className="absolute top-4 left-4 z-30 flex items-center gap-2 rounded-full bg-black/50 px-3 py-1.5 text-xs text-white/70 animate-in fade-in duration-300">
+          <Pause className="h-3 w-3" />
+          Paused — resuming shortly
+        </div>
+      )}
+
+      {/* Fullscreen toggle — visible on hover */}
       <button
         onClick={(e) => {
           e.stopPropagation();
@@ -119,13 +130,13 @@ export function Carousel() {
         )}
       </button>
 
-      {/* Item counter - visible on hover */}
+      {/* Item counter — visible on hover */}
       <div className="absolute bottom-4 right-4 z-30 rounded-full bg-black/40 px-3 py-1 text-xs text-white/60 opacity-0 transition-opacity group-hover:opacity-100">
         {currentIndex + 1} / {totalItems}
       </div>
 
-      {/* Manual mode hint - visible on hover when not auto-looping */}
-      {!settings.auto_loop && (
+      {/* Manual mode hint — visible on hover */}
+      {allowClickAdvance && !paused && (
         <div className="absolute bottom-4 left-4 z-30 rounded-full bg-black/40 px-3 py-1 text-xs text-white/40 opacity-0 transition-opacity group-hover:opacity-100">
           Space / Click to advance
         </div>
