@@ -23,22 +23,41 @@ export function useCarouselPlayback(
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef<number>(0);
+  const transitionLockedUntil = useRef<number>(0);
 
-  const safeIndex = items.length > 0
-    ? Math.min(state.currentIndex, items.length - 1)
-    : 0;
+  const clearTimer = useCallback(() => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  }, []);
+
+  const safeIndex =
+    items.length > 0
+      ? Math.min(state.currentIndex, items.length - 1)
+      : 0;
 
   const currentItem = items[safeIndex] ?? null;
 
   const itemDuration = useMemo(
     () =>
-      (currentItem?.duration_seconds ?? settings.default_item_duration_seconds) *
-      1000,
+      (currentItem?.duration_seconds ??
+        settings.default_item_duration_seconds) * 1000,
     [currentItem?.duration_seconds, settings.default_item_duration_seconds]
   );
 
+  const isLocked = useCallback(() => {
+    return Date.now() < transitionLockedUntil.current;
+  }, []);
+
+  const lockTransition = useCallback((durationMs: number) => {
+    transitionLockedUntil.current = Date.now() + durationMs;
+  }, []);
+
   const goToNext = useCallback(() => {
-    if (items.length === 0) return;
+    if (items.length === 0 || isLocked()) return;
+    clearTimer();
+    lockTransition(settings.transition_duration_ms * 0.8);
     setState((prev) => ({
       ...prev,
       currentIndex: (prev.currentIndex + 1) % items.length,
@@ -46,10 +65,12 @@ export function useCarouselPlayback(
       direction: 1,
     }));
     startTimeRef.current = Date.now();
-  }, [items.length]);
+  }, [items.length, isLocked, clearTimer, lockTransition, settings.transition_duration_ms]);
 
   const goToPrev = useCallback(() => {
-    if (items.length === 0) return;
+    if (items.length === 0 || isLocked()) return;
+    clearTimer();
+    lockTransition(settings.transition_duration_ms * 0.8);
     setState((prev) => ({
       ...prev,
       currentIndex:
@@ -58,11 +79,13 @@ export function useCarouselPlayback(
       direction: -1,
     }));
     startTimeRef.current = Date.now();
-  }, [items.length]);
+  }, [items.length, isLocked, clearTimer, lockTransition, settings.transition_duration_ms]);
 
   const goToIndex = useCallback(
     (index: number) => {
-      if (index < 0 || index >= items.length) return;
+      if (index < 0 || index >= items.length || isLocked()) return;
+      clearTimer();
+      lockTransition(settings.transition_duration_ms * 0.8);
       setState((prev) => ({
         ...prev,
         currentIndex: index,
@@ -71,27 +94,32 @@ export function useCarouselPlayback(
       }));
       startTimeRef.current = Date.now();
     },
-    [items.length]
+    [items.length, isLocked, clearTimer, lockTransition, settings.transition_duration_ms]
   );
 
   const onVideoEnded = useCallback(() => {
     if (settings.auto_loop) {
-      goToNext();
+      transitionLockedUntil.current = 0;
+      clearTimer();
+      setState((prev) => ({
+        ...prev,
+        currentIndex: (prev.currentIndex + 1) % items.length,
+        progress: 0,
+        direction: 1,
+      }));
+      startTimeRef.current = Date.now();
     }
-  }, [settings.auto_loop, goToNext]);
+  }, [settings.auto_loop, items.length, clearTimer]);
 
-  // Auto-loop timer
   useEffect(() => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
+    clearTimer();
 
     if (!settings.auto_loop || items.length === 0 || !state.isPlaying) {
       return;
     }
 
-    const isNonLoopingVideo = currentItem?.type === "video" && !currentItem.video_loop;
+    const isNonLoopingVideo =
+      currentItem?.type === "video" && !currentItem.video_loop;
 
     startTimeRef.current = Date.now();
     timerRef.current = setInterval(() => {
@@ -99,15 +127,21 @@ export function useCarouselPlayback(
       const progress = Math.min(elapsed / itemDuration, 1);
 
       if (!isNonLoopingVideo && progress >= 1) {
-        goToNext();
+        transitionLockedUntil.current = 0;
+        clearTimer();
+        setState((prev) => ({
+          ...prev,
+          currentIndex: (prev.currentIndex + 1) % items.length,
+          progress: 0,
+          direction: 1,
+        }));
+        startTimeRef.current = Date.now();
       } else {
         setState((prev) => ({ ...prev, progress }));
       }
     }, 50);
 
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
+    return clearTimer;
   }, [
     settings.auto_loop,
     items.length,
@@ -116,7 +150,7 @@ export function useCarouselPlayback(
     currentItem?.type,
     currentItem?.video_loop,
     itemDuration,
-    goToNext,
+    clearTimer,
   ]);
 
   return {

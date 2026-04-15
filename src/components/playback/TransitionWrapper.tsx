@@ -21,19 +21,21 @@ export function TransitionWrapper({
 }: TransitionWrapperProps) {
   const config = getTransitionConfig(transitionType, transitionDurationMs);
 
+  const variants = {
+    enter: (d: number) => config.variants.enter(d),
+    center: config.variants.center,
+    exit: (d: number) => config.variants.exit(d),
+  };
+
   return (
     <AnimatePresence initial={false} custom={direction} mode="sync">
       <motion.div
         key={itemKey}
         custom={direction}
+        variants={variants}
         initial="enter"
         animate="center"
         exit="exit"
-        variants={{
-          enter: config.variants.enter,
-          center: config.variants.center,
-          exit: config.variants.exit,
-        }}
         transition={config.transition}
         className="absolute inset-0"
         style={
