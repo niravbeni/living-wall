@@ -14,7 +14,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
 
 interface GlobalSettingsProps {
   settings: CarouselSettings;
@@ -126,76 +125,6 @@ export function GlobalSettings({ settings, onUpdate }: GlobalSettingsProps) {
               <span>Fast</span>
               <span>Slow</span>
             </div>
-          </div>
-        </div>
-      </div>
-
-      <Separator />
-
-      <div>
-        <h3 className="text-sm font-semibold mb-4">Divider intros</h3>
-        <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
-          Full-screen black slides with the IDEO logo (
-          <code className="text-[11px]">/ideo.svg</code>
-          ). Add <span className="font-medium">divider</span> items in Content
-          and order them before images, videos, or web pages.
-        </p>
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="divider-title">Title</Label>
-            <Input
-              id="divider-title"
-              value={settings.divider_title ?? ""}
-              onChange={(e) =>
-                onUpdate({ divider_title: e.target.value })
-              }
-              placeholder="Main headline"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="divider-subtitle">Subtitle</Label>
-            <Input
-              id="divider-subtitle"
-              value={settings.divider_subtitle ?? ""}
-              onChange={(e) =>
-                onUpdate({ divider_subtitle: e.target.value })
-              }
-              placeholder="Supporting line"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="divider-body">Body text</Label>
-            <Textarea
-              id="divider-body"
-              rows={4}
-              value={settings.divider_body ?? ""}
-              onChange={(e) =>
-                onUpdate({ divider_body: e.target.value })
-              }
-              placeholder="Additional copy (optional)"
-              className="resize-y min-h-[96px]"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="divider-duration">
-              Divider duration (seconds)
-            </Label>
-            <Input
-              id="divider-duration"
-              type="number"
-              min={1}
-              max={120}
-              value={settings.divider_duration_seconds ?? 5}
-              onChange={(e) =>
-                onUpdate({
-                  divider_duration_seconds:
-                    parseInt(e.target.value, 10) || 5,
-                })
-              }
-            />
-            <p className="text-xs text-muted-foreground">
-              How long each divider slide stays on screen before the next item.
-            </p>
           </div>
         </div>
       </div>

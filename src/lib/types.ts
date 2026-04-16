@@ -1,5 +1,6 @@
 export interface CarouselItem {
   id: string;
+  /** Legacy `divider` rows are ignored in CMS/playback; use per-item intro instead */
   type: "image" | "video" | "web" | "divider";
   title: string;
   media_url: string;
@@ -8,6 +9,14 @@ export interface CarouselItem {
   video_loop: boolean;
   /** When false, item is kept in CMS but excluded from playback */
   visible_in_carousel: boolean;
+  /** Full-screen intro before this item’s content (IDEO logo + copy on colored bg) */
+  divider_enabled: boolean;
+  divider_title: string;
+  divider_subtitle: string;
+  divider_body: string;
+  /** CSS hex background, e.g. #000000 */
+  divider_background: string;
+  divider_duration_seconds: number;
   sort_order: number;
   created_at: string;
 }
@@ -19,11 +28,6 @@ export interface CarouselSettings {
   transition_duration_ms: number;
   default_item_duration_seconds: number;
   show_progress_bar: boolean;
-  /** Full-screen divider slides (black + logo + copy); duration per divider slide */
-  divider_title: string;
-  divider_subtitle: string;
-  divider_body: string;
-  divider_duration_seconds: number;
 }
 
 export type TransitionType = "crossfade" | "slide" | "zoomFade" | "cardStack";
@@ -42,11 +46,19 @@ export const DEFAULT_SETTINGS: CarouselSettings = {
   transition_duration_ms: 800,
   default_item_duration_seconds: 5,
   show_progress_bar: true,
+};
+
+export const DEFAULT_DIVIDER_BACKGROUND = "#000000";
+
+/** Defaults for per-item intro fields on new media / web rows */
+export const DEFAULT_ITEM_DIVIDER_FIELDS = {
+  divider_enabled: false,
   divider_title: "",
   divider_subtitle: "",
   divider_body: "",
+  divider_background: DEFAULT_DIVIDER_BACKGROUND,
   divider_duration_seconds: 5,
-};
+} as const;
 
 export const ACCEPTED_IMAGE_TYPES = {
   "image/jpeg": [".jpg", ".jpeg"],
@@ -66,5 +78,3 @@ export const ACCEPTED_FILE_TYPES = {
 };
 
 export const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
-
-export const DIVIDER_MEDIA_PLACEHOLDER = "divider://";

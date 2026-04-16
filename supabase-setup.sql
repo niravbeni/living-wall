@@ -11,6 +11,12 @@ create table if not exists carousel_items (
   duration_seconds integer default 5,
   video_loop boolean default false,
   visible_in_carousel boolean default true,
+  divider_enabled boolean default false,
+  divider_title text default '',
+  divider_subtitle text default '',
+  divider_body text default '',
+  divider_background text default '#000000',
+  divider_duration_seconds integer default 5,
   sort_order integer default 0,
   created_at timestamptz default now()
 );
@@ -22,11 +28,7 @@ create table if not exists carousel_settings (
   transition_type text default 'crossfade' check (transition_type in ('crossfade', 'slide', 'zoomFade', 'cardStack')),
   transition_duration_ms integer default 800,
   default_item_duration_seconds integer default 5,
-  show_progress_bar boolean default true,
-  divider_title text default '',
-  divider_subtitle text default '',
-  divider_body text default '',
-  divider_duration_seconds integer default 5
+  show_progress_bar boolean default true
 );
 
 -- 3. Insert default settings row

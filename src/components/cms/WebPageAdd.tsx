@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { normalizeWebUrl } from "@/lib/url";
 import type { CarouselItem } from "@/lib/types";
+import { DEFAULT_ITEM_DIVIDER_FIELDS } from "@/lib/types";
 import { Globe, Plus } from "lucide-react";
 
 interface WebPageAddProps {
@@ -50,6 +51,7 @@ export function WebPageAdd({
         duration_seconds: defaultDuration,
         video_loop: false,
         visible_in_carousel: true,
+        ...DEFAULT_ITEM_DIVIDER_FIELDS,
         sort_order: itemCount,
       });
       setUrl("");

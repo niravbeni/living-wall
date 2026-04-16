@@ -3,13 +3,24 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import type { CarouselItem } from "@/lib/types";
+import { DEFAULT_DIVIDER_BACKGROUND } from "@/lib/types";
 
 function normalizeItem(
   row: CarouselItem & { visible_in_carousel?: boolean | null }
 ): CarouselItem {
+  const dDur = row.divider_duration_seconds;
   return {
     ...row,
     visible_in_carousel: row.visible_in_carousel !== false,
+    divider_enabled: row.divider_enabled === true,
+    divider_title: row.divider_title ?? "",
+    divider_subtitle: row.divider_subtitle ?? "",
+    divider_body: row.divider_body ?? "",
+    divider_background: row.divider_background || DEFAULT_DIVIDER_BACKGROUND,
+    divider_duration_seconds:
+      typeof dDur === "number" && !Number.isNaN(dDur)
+        ? Math.max(1, Math.min(300, dDur))
+        : 5,
   };
 }
 

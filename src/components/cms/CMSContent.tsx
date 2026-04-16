@@ -4,7 +4,6 @@ import { useCarouselItems } from "@/hooks/useCarouselItems";
 import { useSettings } from "@/hooks/useSettings";
 import { MediaUploader } from "@/components/cms/MediaUploader";
 import { WebPageAdd } from "@/components/cms/WebPageAdd";
-import { DividerAdd } from "@/components/cms/DividerAdd";
 import { ItemList } from "@/components/cms/ItemList";
 import { GlobalSettings } from "@/components/cms/GlobalSettings";
 import { PinGate } from "@/components/cms/PinGate";
@@ -83,7 +82,9 @@ export default function CMSContent() {
               {items.length > 0 && (
                 <p className="text-xs text-muted-foreground -mt-1">
                   Toggle <span className="font-medium">Display</span> on each
-                  row to include or hide items on the wall without removing them.
+                  row to include or hide that slide on the wall. Expand a row to
+                  add an optional full-screen intro (IDEO logo + copy) before
+                  that item.
                 </p>
               )}
               <MediaUploader
@@ -92,11 +93,6 @@ export default function CMSContent() {
                 onUpload={addItem}
               />
               <WebPageAdd
-                itemCount={items.length}
-                defaultDuration={settings.default_item_duration_seconds}
-                onAdd={addItem}
-              />
-              <DividerAdd
                 itemCount={items.length}
                 defaultDuration={settings.default_item_duration_seconds}
                 onAdd={addItem}

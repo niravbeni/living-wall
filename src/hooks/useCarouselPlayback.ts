@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
-import type { CarouselItem, CarouselSettings } from "@/lib/types";
+import type { PlaybackSlide } from "@/lib/playback-slides";
+import type { CarouselSettings } from "@/lib/types";
 import { DEFAULT_SETTINGS } from "@/lib/types";
 
 const IDLE_RESUME_DELAY = 10_000;
@@ -14,7 +15,7 @@ interface PlaybackState {
 }
 
 export function useCarouselPlayback(
-  items: CarouselItem[],
+  slides: PlaybackSlide[],
   settings: CarouselSettings
 ) {
   const [state, setState] = useState<PlaybackState>({
@@ -45,20 +46,22 @@ export function useCarouselPlayback(
   }, []);
 
   const safeIndex =
-    items.length > 0
-      ? Math.min(state.currentIndex, items.length - 1)
+    slides.length > 0
+      ? Math.min(state.currentIndex, slides.length - 1)
       : 0;
 
-  const currentItem = items[safeIndex] ?? null;
+  const currentSlide = slides[safeIndex] ?? null;
+  const currentItem = currentSlide?.item ?? null;
 
   const itemDuration = useMemo(() => {
-    if (!currentItem) {
+    if (!currentSlide || !currentItem) {
       return settings.default_item_duration_seconds * 1000;
     }
-    if (currentItem.type === "divider") {
-      return (
-        (settings.divider_duration_seconds ??
-          DEFAULT_SETTINGS.divider_duration_seconds) * 1000
+    if (currentSlide.phase === "intro") {
+      return Math.max(
+        1000,
+        (currentItem.divider_duration_seconds ??
+          DEFAULT_SETTINGS.default_item_duration_seconds) * 1000
       );
     }
     return (
@@ -66,9 +69,9 @@ export function useCarouselPlayback(
       1000
     );
   }, [
+    currentSlide,
     currentItem,
     settings.default_item_duration_seconds,
-    settings.divider_duration_seconds,
   ]);
 
   const lock = useCallback((durationMs: number) => {
@@ -88,19 +91,20 @@ export function useCarouselPlayback(
 
   const manualAdvance = useCallback(
     (dir: number) => {
-      if (items.length === 0 || lockedRef.current) return;
+      if (slides.length === 0 || lockedRef.current) return;
       clearTimer();
       lock(settings.transition_duration_ms + 50);
 
-      // Leaving a web slide: resume normal auto-loop on the next item (no idle pause)
       const shouldPause =
-        settings.auto_loop && currentItem?.type !== "web";
+        settings.auto_loop &&
+        currentSlide?.phase === "content" &&
+        currentItem?.type === "web";
 
       setState((prev) => {
         const next =
           dir > 0
-            ? (prev.currentIndex + 1) % items.length
-            : (prev.currentIndex - 1 + items.length) % items.length;
+            ? (prev.currentIndex + 1) % slides.length
+            : (prev.currentIndex - 1 + slides.length) % slides.length;
         return {
           ...prev,
           currentIndex: next,
@@ -116,12 +120,13 @@ export function useCarouselPlayback(
       }
     },
     [
-      items.length,
+      slides.length,
       clearTimer,
       lock,
       settings.transition_duration_ms,
       settings.auto_loop,
       startIdleTimer,
+      currentSlide?.phase,
       currentItem?.type,
     ]
   );
@@ -136,12 +141,14 @@ export function useCarouselPlayback(
 
   const goToIndex = useCallback(
     (index: number) => {
-      if (index < 0 || index >= items.length || lockedRef.current) return;
+      if (index < 0 || index >= slides.length || lockedRef.current) return;
       clearTimer();
       lock(settings.transition_duration_ms + 50);
 
       const shouldPause =
-        settings.auto_loop && currentItem?.type !== "web";
+        settings.auto_loop &&
+        currentSlide?.phase === "content" &&
+        currentItem?.type === "web";
 
       setState((prev) => ({
         ...prev,
@@ -157,46 +164,55 @@ export function useCarouselPlayback(
       }
     },
     [
-      items.length,
+      slides.length,
       clearTimer,
       lock,
       settings.transition_duration_ms,
       settings.auto_loop,
       startIdleTimer,
+      currentSlide?.phase,
       currentItem?.type,
     ]
   );
 
   const onVideoEnded = useCallback(() => {
-    if (settings.auto_loop && !state.paused && items.length > 0) {
+    if (settings.auto_loop && !state.paused && slides.length > 0) {
       lockedRef.current = false;
       if (lockTimeoutRef.current) clearTimeout(lockTimeoutRef.current);
       clearTimer();
       lock(settings.transition_duration_ms + 50);
       setState((prev) => ({
         ...prev,
-        currentIndex: (prev.currentIndex + 1) % items.length,
+        currentIndex: (prev.currentIndex + 1) % slides.length,
         progress: 0,
         direction: 1,
       }));
       startTimeRef.current = Date.now();
     }
-  }, [settings.auto_loop, settings.transition_duration_ms, state.paused, items.length, clearTimer, lock]);
+  }, [
+    settings.auto_loop,
+    settings.transition_duration_ms,
+    state.paused,
+    slides.length,
+    clearTimer,
+    lock,
+  ]);
 
-  // Auto-loop timer (skipped for web/iframe slides — advance only via user input)
   useEffect(() => {
     clearTimer();
 
-    if (!settings.auto_loop || items.length === 0 || state.paused) {
+    if (!settings.auto_loop || slides.length === 0 || state.paused) {
       return;
     }
 
-    if (currentItem?.type === "web") {
+    if (currentSlide?.phase === "content" && currentItem?.type === "web") {
       return;
     }
 
     const isNonLoopingVideo =
-      currentItem?.type === "video" && !currentItem.video_loop;
+      currentSlide?.phase === "content" &&
+      currentItem?.type === "video" &&
+      !currentItem.video_loop;
 
     startTimeRef.current = Date.now();
     timerRef.current = setInterval(() => {
@@ -210,7 +226,7 @@ export function useCarouselPlayback(
         lock(settings.transition_duration_ms + 50);
         setState((prev) => ({
           ...prev,
-          currentIndex: (prev.currentIndex + 1) % items.length,
+          currentIndex: (prev.currentIndex + 1) % slides.length,
           progress: 0,
           direction: 1,
         }));
@@ -224,9 +240,10 @@ export function useCarouselPlayback(
   }, [
     settings.auto_loop,
     settings.transition_duration_ms,
-    items.length,
+    slides.length,
     state.paused,
     safeIndex,
+    currentSlide?.phase,
     currentItem?.type,
     currentItem?.video_loop,
     itemDuration,
@@ -234,7 +251,6 @@ export function useCarouselPlayback(
     lock,
   ]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (lockTimeoutRef.current) clearTimeout(lockTimeoutRef.current);
@@ -247,11 +263,12 @@ export function useCarouselPlayback(
     progress: state.progress,
     direction: state.direction,
     paused: state.paused,
+    currentSlide,
     currentItem,
     goToNext,
     goToPrev,
     goToIndex,
     onVideoEnded,
-    totalItems: items.length,
+    totalSlides: slides.length,
   };
 }

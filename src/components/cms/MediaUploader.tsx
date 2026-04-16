@@ -3,7 +3,11 @@
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { supabase, getPublicUrl } from "@/lib/supabase";
-import { ACCEPTED_FILE_TYPES, MAX_FILE_SIZE } from "@/lib/types";
+import {
+  ACCEPTED_FILE_TYPES,
+  MAX_FILE_SIZE,
+  DEFAULT_ITEM_DIVIDER_FIELDS,
+} from "@/lib/types";
 import type { CarouselItem } from "@/lib/types";
 import { Upload, Loader2, AlertCircle } from "lucide-react";
 
@@ -54,6 +58,7 @@ export function MediaUploader({
             duration_seconds: defaultDuration,
             video_loop: false,
             visible_in_carousel: true,
+            ...DEFAULT_ITEM_DIVIDER_FIELDS,
             sort_order: itemCount + i,
           });
         } catch (err) {

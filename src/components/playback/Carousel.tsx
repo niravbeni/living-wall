@@ -5,6 +5,7 @@ import { useCarouselItems } from "@/hooks/useCarouselItems";
 import { useSettings } from "@/hooks/useSettings";
 import { useCarouselPlayback } from "@/hooks/useCarouselPlayback";
 import { useFullscreen } from "@/hooks/useFullscreen";
+import { expandPlaybackSlides } from "@/lib/playback-slides";
 import { CarouselItemDisplay } from "./CarouselItem";
 import { TransitionWrapper } from "./TransitionWrapper";
 import { ProgressBar } from "./ProgressBar";
@@ -20,8 +21,13 @@ export function Carousel() {
     [items]
   );
 
+  const slides = useMemo(
+    () => expandPlaybackSlides(visibleItems),
+    [visibleItems]
+  );
+
   const {
-    currentIndex,
+    currentSlide,
     currentItem,
     progress,
     direction,
@@ -29,7 +35,7 @@ export function Carousel() {
     goToNext,
     goToPrev,
     onVideoEnded,
-  } = useCarouselPlayback(visibleItems, settings);
+  } = useCarouselPlayback(slides, settings);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -64,13 +70,14 @@ export function Carousel() {
     return <div className="h-screen w-screen bg-black" />;
   }
 
-  if (visibleItems.length === 0) {
+  if (slides.length === 0) {
     return <div className="h-screen w-screen bg-black" />;
   }
 
-  const isWebSlide = currentItem?.type === "web";
+  const isWebContent =
+    currentSlide?.phase === "content" && currentItem?.type === "web";
   const allowClickAdvance =
-    !settings.auto_loop || paused || isWebSlide;
+    !settings.auto_loop || paused || isWebContent;
 
   return (
     <div
@@ -80,18 +87,18 @@ export function Carousel() {
       }`}
       onClick={allowClickAdvance ? goToNext : undefined}
     >
-      {currentItem && (
+      {currentSlide && currentItem && (
         <TransitionWrapper
-          itemKey={currentItem.id + "-" + currentIndex}
+          itemKey={currentSlide.key}
           transitionType={settings.transition_type}
           transitionDurationMs={settings.transition_duration_ms}
           direction={direction}
         >
           <CarouselItemDisplay
             item={currentItem}
+            phase={currentSlide.phase}
             isActive={true}
             onVideoEnded={onVideoEnded}
-            settings={settings}
           />
         </TransitionWrapper>
       )}
@@ -99,7 +106,7 @@ export function Carousel() {
       <ProgressBar
         progress={progress}
         visible={
-          settings.show_progress_bar && !paused && !isWebSlide
+          settings.show_progress_bar && !paused && !isWebContent
         }
       />
     </div>
