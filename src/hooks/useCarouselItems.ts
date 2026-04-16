@@ -20,7 +20,7 @@ function normalizeItem(
     divider_duration_seconds:
       typeof dDur === "number" && !Number.isNaN(dDur)
         ? Math.max(1, Math.min(300, dDur))
-        : 5,
+        : 3,
   };
 }
 

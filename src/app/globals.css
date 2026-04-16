@@ -2,6 +2,62 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+@font-face {
+  font-family: "FH Oscar";
+  src: url("/fonts/FH Oscar/FHOscar-Light.otf") format("opentype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "FH Oscar";
+  src: url("/fonts/FH Oscar/FHOscar-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "FH Oscar";
+  src: url("/fonts/FH Oscar/FHOscar-RegularItalic.otf") format("opentype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "FH Oscar";
+  src: url("/fonts/FH Oscar/FHOscar-Medium.otf") format("opentype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "FH Oscar";
+  src: url("/fonts/FH Oscar/FHOscar-SemiBold.otf") format("opentype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "FH Oscar";
+  src: url("/fonts/FH Oscar/FHOscar-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "FH Oscar";
+  src: url("/fonts/FH Oscar/FHOscar-Black.otf") format("opentype");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

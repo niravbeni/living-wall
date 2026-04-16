@@ -46,14 +46,32 @@ export function CarouselItemDisplay({
   if (phase === "intro") {
     return (
       <div
-        className="absolute inset-0 flex flex-col items-center justify-center px-6 sm:px-10"
-        style={{ backgroundColor: bg, color: fg }}
+        className="absolute inset-0 flex flex-col px-8 sm:px-16 py-12 sm:py-20"
+        style={{ backgroundColor: bg, color: fg, fontFamily: "'FH Oscar', sans-serif" }}
       >
+        <div className="flex-1 flex flex-col justify-center max-w-5xl">
+          {item.divider_title ? (
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.1]">
+              {item.divider_title}
+            </h1>
+          ) : null}
+          {item.divider_subtitle ? (
+            <p className="mt-4 sm:mt-6 text-xl sm:text-2xl md:text-3xl font-light opacity-85 max-w-3xl leading-snug">
+              {item.divider_subtitle}
+            </p>
+          ) : null}
+          {item.divider_body ? (
+            <p className="mt-6 sm:mt-8 text-base sm:text-lg md:text-xl font-light opacity-70 max-w-2xl whitespace-pre-wrap leading-relaxed">
+              {item.divider_body}
+            </p>
+          ) : null}
+        </div>
+
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/ideo.svg"
           alt="IDEO"
-          className="mb-8 sm:mb-10 w-[min(40vw,220px)] max-h-24 object-contain"
+          className="self-end w-[100px] sm:w-[120px] object-contain"
           style={{
             filter:
               fg === "#18181b"
@@ -62,30 +80,6 @@ export function CarouselItemDisplay({
           }}
           draggable={false}
         />
-        {item.divider_title ? (
-          <h1
-            className="text-center text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight max-w-4xl"
-            style={{ textShadow: "0 1px 2px rgba(0,0,0,0.12)" }}
-          >
-            {item.divider_title}
-          </h1>
-        ) : null}
-        {item.divider_subtitle ? (
-          <p
-            className="mt-4 text-center text-lg sm:text-xl max-w-3xl opacity-90"
-            style={{ textShadow: "0 1px 2px rgba(0,0,0,0.08)" }}
-          >
-            {item.divider_subtitle}
-          </p>
-        ) : null}
-        {item.divider_body ? (
-          <p
-            className="mt-6 text-center text-base sm:text-lg max-w-2xl whitespace-pre-wrap leading-relaxed opacity-80"
-            style={{ textShadow: "0 1px 2px rgba(0,0,0,0.08)" }}
-          >
-            {item.divider_body}
-          </p>
-        ) : null}
       </div>
     );
   }

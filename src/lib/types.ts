@@ -57,7 +57,7 @@ export const DEFAULT_ITEM_DIVIDER_FIELDS = {
   divider_subtitle: "",
   divider_body: "",
   divider_background: DEFAULT_DIVIDER_BACKGROUND,
-  divider_duration_seconds: 5,
+  divider_duration_seconds: 3,
 } as const;
 
 export const ACCEPTED_IMAGE_TYPES = {
