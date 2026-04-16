@@ -52,6 +52,7 @@ export function WebPageAdd({
         video_loop: false,
         visible_in_carousel: true,
         ...DEFAULT_ITEM_DIVIDER_FIELDS,
+        divider_title: label,
         sort_order: itemCount,
       });
       setUrl("");

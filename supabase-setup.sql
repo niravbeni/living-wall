@@ -11,7 +11,7 @@ create table if not exists carousel_items (
   duration_seconds integer default 5,
   video_loop boolean default false,
   visible_in_carousel boolean default true,
-  divider_enabled boolean default false,
+  divider_enabled boolean default true,
   divider_title text default '',
   divider_subtitle text default '',
   divider_body text default '',

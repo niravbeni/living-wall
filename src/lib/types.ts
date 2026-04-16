@@ -52,7 +52,7 @@ export const DEFAULT_DIVIDER_BACKGROUND = "#000000";
 
 /** Defaults for per-item intro fields on new media / web rows */
 export const DEFAULT_ITEM_DIVIDER_FIELDS = {
-  divider_enabled: false,
+  divider_enabled: true,
   divider_title: "",
   divider_subtitle: "",
   divider_body: "",

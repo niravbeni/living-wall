@@ -50,15 +50,17 @@ export function MediaUploader({
           const mediaUrl = getPublicUrl(fileName);
           const isVideo = file.type.startsWith("video/");
 
+          const label = file.name.replace(/\.[^/.]+$/, "");
           await onUpload({
             type: isVideo ? "video" : "image",
-            title: file.name.replace(/\.[^/.]+$/, ""),
+            title: label,
             media_url: mediaUrl,
             thumbnail_url: "",
             duration_seconds: defaultDuration,
             video_loop: false,
             visible_in_carousel: true,
             ...DEFAULT_ITEM_DIVIDER_FIELDS,
+            divider_title: label,
             sort_order: itemCount + i,
           });
         } catch (err) {
