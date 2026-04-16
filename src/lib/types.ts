@@ -54,8 +54,9 @@ export const DEFAULT_DIVIDER_BACKGROUND = "#000000";
 export const DEFAULT_ITEM_DIVIDER_FIELDS = {
   divider_enabled: true,
   divider_title: "",
-  divider_subtitle: "",
-  divider_body: "",
+  divider_subtitle: "Lorem ipsum dolor sit amet",
+  divider_body:
+    "Consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
   divider_background: DEFAULT_DIVIDER_BACKGROUND,
   divider_duration_seconds: 3,
 } as const;
