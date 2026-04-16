@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { CarouselItem } from "@/lib/types";
@@ -32,6 +32,60 @@ interface ItemCardProps {
   onDelete: (id: string, mediaUrl: string) => Promise<void>;
 }
 
+/**
+ * Local-state text input that only pushes to the DB on blur.
+ * Resyncs from the prop when the prop changes externally (e.g. realtime).
+ */
+function BufferedInput({
+  value,
+  onCommit,
+  ...rest
+}: {
+  value: string;
+  onCommit: (v: string) => void;
+} & Omit<
+  React.ComponentProps<typeof Input>,
+  "value" | "onChange" | "onBlur"
+>) {
+  const [local, setLocal] = useState(value);
+  useEffect(() => setLocal(value), [value]);
+  return (
+    <Input
+      {...rest}
+      value={local}
+      onChange={(e) => setLocal(e.target.value)}
+      onBlur={() => {
+        if (local !== value) onCommit(local);
+      }}
+    />
+  );
+}
+
+function BufferedTextarea({
+  value,
+  onCommit,
+  ...rest
+}: {
+  value: string;
+  onCommit: (v: string) => void;
+} & Omit<
+  React.ComponentProps<typeof Textarea>,
+  "value" | "onChange" | "onBlur"
+>) {
+  const [local, setLocal] = useState(value);
+  useEffect(() => setLocal(value), [value]);
+  return (
+    <Textarea
+      {...rest}
+      value={local}
+      onChange={(e) => setLocal(e.target.value)}
+      onBlur={() => {
+        if (local !== value) onCommit(local);
+      }}
+    />
+  );
+}
+
 export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -60,6 +114,11 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
       setDeleting(false);
     }
   };
+
+  const commit = useCallback(
+    (updates: Partial<CarouselItem>) => onUpdate(item.id, updates),
+    [item.id, onUpdate]
+  );
 
   const isVisible = item.visible_in_carousel !== false;
   const isLegacyDivider = item.type === "divider";
@@ -177,7 +236,7 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
                 className="cursor-pointer scale-90"
                 checked={isVisible}
                 onCheckedChange={(checked) =>
-                  onUpdate(item.id, { visible_in_carousel: checked })
+                  commit({ visible_in_carousel: checked })
                 }
               />
             </div>
@@ -220,10 +279,10 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
             <>
               <div className="space-y-2">
                 <Label htmlFor={`title-${item.id}`}>Title</Label>
-                <Input
+                <BufferedInput
                   id={`title-${item.id}`}
                   value={item.title}
-                  onChange={(e) => onUpdate(item.id, { title: e.target.value })}
+                  onCommit={(v) => commit({ title: v })}
                   placeholder="Item title"
                 />
               </div>
@@ -231,16 +290,13 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
               {item.type === "web" ? (
                 <div className="space-y-2">
                   <Label htmlFor={`url-${item.id}`}>Page URL</Label>
-                  <Input
+                  <BufferedInput
                     id={`url-${item.id}`}
                     type="url"
                     value={item.media_url}
-                    onChange={(e) =>
-                      onUpdate(item.id, { media_url: e.target.value })
-                    }
-                    onBlur={(e) => {
-                      const n = normalizeWebUrl(e.target.value);
-                      if (n) onUpdate(item.id, { media_url: n });
+                    onCommit={(v) => {
+                      const n = normalizeWebUrl(v);
+                      commit({ media_url: n || v });
                     }}
                     placeholder="https://"
                   />
@@ -255,16 +311,14 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
                     <Label htmlFor={`duration-${item.id}`}>
                       Duration (seconds)
                     </Label>
-                    <Input
+                    <BufferedInput
                       id={`duration-${item.id}`}
                       type="number"
                       min={1}
                       max={300}
-                      value={item.duration_seconds}
-                      onChange={(e) =>
-                        onUpdate(item.id, {
-                          duration_seconds: parseInt(e.target.value) || 5,
-                        })
+                      value={String(item.duration_seconds)}
+                      onCommit={(v) =>
+                        commit({ duration_seconds: parseInt(v) || 5 })
                       }
                     />
                   </div>
@@ -282,7 +336,7 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
                         className="cursor-pointer"
                         checked={item.video_loop}
                         onCheckedChange={(checked) =>
-                          onUpdate(item.id, { video_loop: checked })
+                          commit({ video_loop: checked })
                         }
                       />
                     </div>
@@ -314,7 +368,7 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
                         className="cursor-pointer"
                         checked={item.divider_enabled}
                         onCheckedChange={(checked) =>
-                          onUpdate(item.id, { divider_enabled: checked })
+                          commit({ divider_enabled: checked })
                         }
                       />
                     </div>
@@ -323,12 +377,10 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
                         <Label htmlFor={`div-title-${item.id}`}>
                           Intro title
                         </Label>
-                        <Input
+                        <BufferedInput
                           id={`div-title-${item.id}`}
                           value={item.divider_title}
-                          onChange={(e) =>
-                            onUpdate(item.id, { divider_title: e.target.value })
-                          }
+                          onCommit={(v) => commit({ divider_title: v })}
                           placeholder="Headline"
                         />
                       </div>
@@ -336,14 +388,10 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
                         <Label htmlFor={`div-sub-${item.id}`}>
                           Intro subtitle
                         </Label>
-                        <Input
+                        <BufferedInput
                           id={`div-sub-${item.id}`}
                           value={item.divider_subtitle}
-                          onChange={(e) =>
-                            onUpdate(item.id, {
-                              divider_subtitle: e.target.value,
-                            })
-                          }
+                          onCommit={(v) => commit({ divider_subtitle: v })}
                           placeholder="Supporting line"
                         />
                       </div>
@@ -351,13 +399,11 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
                         <Label htmlFor={`div-body-${item.id}`}>
                           Intro body
                         </Label>
-                        <Textarea
+                        <BufferedTextarea
                           id={`div-body-${item.id}`}
                           rows={3}
                           value={item.divider_body}
-                          onChange={(e) =>
-                            onUpdate(item.id, { divider_body: e.target.value })
-                          }
+                          onCommit={(v) => commit({ divider_body: v })}
                           placeholder="Optional longer copy"
                           className="resize-y min-h-[72px]"
                         />
@@ -373,17 +419,13 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
                             className="h-10 w-14 shrink-0 cursor-pointer p-1"
                             value={item.divider_background}
                             onChange={(e) =>
-                              onUpdate(item.id, {
-                                divider_background: e.target.value,
-                              })
+                              commit({ divider_background: e.target.value })
                             }
                           />
-                          <Input
+                          <BufferedInput
                             value={item.divider_background}
-                            onChange={(e) =>
-                              onUpdate(item.id, {
-                                divider_background: e.target.value,
-                              })
+                            onCommit={(v) =>
+                              commit({ divider_background: v })
                             }
                             placeholder="#000000"
                             className="font-mono text-sm"
@@ -394,16 +436,16 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
                         <Label htmlFor={`div-dur-${item.id}`}>
                           Intro duration (seconds)
                         </Label>
-                        <Input
+                        <BufferedInput
                           id={`div-dur-${item.id}`}
                           type="number"
                           min={1}
                           max={300}
-                          value={item.divider_duration_seconds}
-                          onChange={(e) =>
-                            onUpdate(item.id, {
+                          value={String(item.divider_duration_seconds)}
+                          onCommit={(v) =>
+                            commit({
                               divider_duration_seconds:
-                                parseInt(e.target.value, 10) || 5,
+                                parseInt(v, 10) || 5,
                             })
                           }
                         />
