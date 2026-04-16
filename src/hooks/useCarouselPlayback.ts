@@ -78,7 +78,9 @@ export function useCarouselPlayback(
       clearTimer();
       lock(settings.transition_duration_ms + 50);
 
-      const shouldPause = settings.auto_loop;
+      // Leaving a web slide: resume normal auto-loop on the next item (no idle pause)
+      const shouldPause =
+        settings.auto_loop && currentItem?.type !== "web";
 
       setState((prev) => {
         const next =
@@ -90,7 +92,7 @@ export function useCarouselPlayback(
           currentIndex: next,
           progress: 0,
           direction: dir,
-          paused: shouldPause ? true : prev.paused,
+          paused: !!shouldPause,
         };
       });
       startTimeRef.current = Date.now();
@@ -99,7 +101,15 @@ export function useCarouselPlayback(
         startIdleTimer();
       }
     },
-    [items.length, clearTimer, lock, settings.transition_duration_ms, settings.auto_loop, startIdleTimer]
+    [
+      items.length,
+      clearTimer,
+      lock,
+      settings.transition_duration_ms,
+      settings.auto_loop,
+      startIdleTimer,
+      currentItem?.type,
+    ]
   );
 
   const goToNext = useCallback(() => {
@@ -116,14 +126,15 @@ export function useCarouselPlayback(
       clearTimer();
       lock(settings.transition_duration_ms + 50);
 
-      const shouldPause = settings.auto_loop;
+      const shouldPause =
+        settings.auto_loop && currentItem?.type !== "web";
 
       setState((prev) => ({
         ...prev,
         currentIndex: index,
         progress: 0,
         direction: index > prev.currentIndex ? 1 : -1,
-        paused: shouldPause ? true : prev.paused,
+        paused: !!shouldPause,
       }));
       startTimeRef.current = Date.now();
 
@@ -131,7 +142,15 @@ export function useCarouselPlayback(
         startIdleTimer();
       }
     },
-    [items.length, clearTimer, lock, settings.transition_duration_ms, settings.auto_loop, startIdleTimer]
+    [
+      items.length,
+      clearTimer,
+      lock,
+      settings.transition_duration_ms,
+      settings.auto_loop,
+      startIdleTimer,
+      currentItem?.type,
+    ]
   );
 
   const onVideoEnded = useCallback(() => {
@@ -150,11 +169,15 @@ export function useCarouselPlayback(
     }
   }, [settings.auto_loop, settings.transition_duration_ms, state.paused, items.length, clearTimer, lock]);
 
-  // Auto-loop timer
+  // Auto-loop timer (skipped for web/iframe slides — advance only via user input)
   useEffect(() => {
     clearTimer();
 
     if (!settings.auto_loop || items.length === 0 || state.paused) {
+      return;
+    }
+
+    if (currentItem?.type === "web") {
       return;
     }
 

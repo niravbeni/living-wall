@@ -26,6 +26,19 @@ export function CarouselItemDisplay({
     }
   }, [isActive]);
 
+  if (item.type === "web") {
+    return (
+      <iframe
+        src={isActive ? item.media_url : "about:blank"}
+        title={item.title || "Web page"}
+        className="absolute inset-0 h-full w-full border-0 bg-white"
+        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads"
+        referrerPolicy="no-referrer-when-downgrade"
+        loading="eager"
+      />
+    );
+  }
+
   if (item.type === "video") {
     return (
       <video

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { CarouselItem } from "@/lib/types";
+import { normalizeWebUrl } from "@/lib/url";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +20,7 @@ import {
   Video,
   Eye,
   EyeOff,
+  Globe,
 } from "lucide-react";
 
 interface ItemCardProps {
@@ -78,7 +80,11 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
         </button>
 
         <div className="relative h-14 w-20 shrink-0 rounded-md overflow-hidden bg-muted">
-          {item.type === "video" ? (
+          {item.type === "web" ? (
+            <div className="flex h-full w-full items-center justify-center bg-muted">
+              <Globe className="h-7 w-7 text-muted-foreground" />
+            </div>
+          ) : item.type === "video" ? (
             <video
               src={item.media_url}
               className="h-full w-full object-cover"
@@ -106,16 +112,24 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
           </p>
           <div className="flex flex-wrap items-center gap-2 mt-1">
             <Badge variant="secondary" className="text-xs gap-1">
-              {item.type === "video" ? (
+              {item.type === "web" ? (
+                <Globe className="h-3 w-3" />
+              ) : item.type === "video" ? (
                 <Video className="h-3 w-3" />
               ) : (
                 <ImageIcon className="h-3 w-3" />
               )}
-              {item.type}
+              {item.type === "web" ? "web" : item.type}
             </Badge>
-            <span className="text-xs text-muted-foreground">
-              {item.duration_seconds}s
-            </span>
+            {item.type === "web" ? (
+              <span className="text-xs text-muted-foreground">
+                Manual advance
+              </span>
+            ) : (
+              <span className="text-xs text-muted-foreground">
+                {item.duration_seconds}s
+              </span>
+            )}
             {!isVisible && (
               <Badge variant="outline" className="text-xs gap-1">
                 <EyeOff className="h-3 w-3" />
@@ -175,38 +189,63 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor={`duration-${item.id}`}>
-              Duration (seconds)
-            </Label>
-            <Input
-              id={`duration-${item.id}`}
-              type="number"
-              min={1}
-              max={300}
-              value={item.duration_seconds}
-              onChange={(e) =>
-                onUpdate(item.id, {
-                  duration_seconds: parseInt(e.target.value) || 5,
-                })
-              }
-            />
-          </div>
-
-          {item.type === "video" && (
-            <div className="flex items-center justify-between">
-              <Label htmlFor={`loop-${item.id}`} className="cursor-pointer">
-                Loop video
-              </Label>
-              <Switch
-                id={`loop-${item.id}`}
-                className="cursor-pointer"
-                checked={item.video_loop}
-                onCheckedChange={(checked) =>
-                  onUpdate(item.id, { video_loop: checked })
+          {item.type === "web" ? (
+            <div className="space-y-2">
+              <Label htmlFor={`url-${item.id}`}>Page URL</Label>
+              <Input
+                id={`url-${item.id}`}
+                type="url"
+                value={item.media_url}
+                onChange={(e) =>
+                  onUpdate(item.id, { media_url: e.target.value })
                 }
+                onBlur={(e) => {
+                  const n = normalizeWebUrl(e.target.value);
+                  if (n) onUpdate(item.id, { media_url: n });
+                }}
+                placeholder="https://"
               />
+              <p className="text-xs text-muted-foreground">
+                Auto-advance is off for this slide until you press Space or
+                arrows. Some sites block embedding in iframes.
+              </p>
             </div>
+          ) : (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor={`duration-${item.id}`}>
+                  Duration (seconds)
+                </Label>
+                <Input
+                  id={`duration-${item.id}`}
+                  type="number"
+                  min={1}
+                  max={300}
+                  value={item.duration_seconds}
+                  onChange={(e) =>
+                    onUpdate(item.id, {
+                      duration_seconds: parseInt(e.target.value) || 5,
+                    })
+                  }
+                />
+              </div>
+
+              {item.type === "video" && (
+                <div className="flex items-center justify-between">
+                  <Label htmlFor={`loop-${item.id}`} className="cursor-pointer">
+                    Loop video
+                  </Label>
+                  <Switch
+                    id={`loop-${item.id}`}
+                    className="cursor-pointer"
+                    checked={item.video_loop}
+                    onCheckedChange={(checked) =>
+                      onUpdate(item.id, { video_loop: checked })
+                    }
+                  />
+                </div>
+              )}
+            </>
           )}
 
           <Button

@@ -1,6 +1,6 @@
 export interface CarouselItem {
   id: string;
-  type: "image" | "video";
+  type: "image" | "video" | "web";
   title: string;
   media_url: string;
   thumbnail_url: string;

@@ -68,12 +68,16 @@ export function Carousel() {
     return <div className="h-screen w-screen bg-black" />;
   }
 
-  const allowClickAdvance = !settings.auto_loop || paused;
+  const isWebSlide = currentItem?.type === "web";
+  const allowClickAdvance =
+    !settings.auto_loop || paused || isWebSlide;
 
   return (
     <div
       ref={containerRef}
-      className="relative h-screen w-screen overflow-hidden bg-black cursor-none"
+      className={`relative h-screen w-screen overflow-hidden bg-black ${
+        allowClickAdvance ? "cursor-pointer" : "cursor-none"
+      }`}
       onClick={allowClickAdvance ? goToNext : undefined}
     >
       {currentItem && (
@@ -93,7 +97,9 @@ export function Carousel() {
 
       <ProgressBar
         progress={progress}
-        visible={settings.show_progress_bar && !paused}
+        visible={
+          settings.show_progress_bar && !paused && !isWebSlide
+        }
       />
     </div>
   );

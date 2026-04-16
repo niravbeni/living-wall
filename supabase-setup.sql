@@ -4,7 +4,7 @@
 -- 1. Create carousel_items table
 create table if not exists carousel_items (
   id uuid default gen_random_uuid() primary key,
-  type text not null check (type in ('image', 'video')),
+  type text not null check (type in ('image', 'video', 'web')),
   title text default '',
   media_url text not null,
   thumbnail_url text default '',
