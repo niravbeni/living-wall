@@ -4,6 +4,7 @@ import { useCarouselItems } from "@/hooks/useCarouselItems";
 import { useSettings } from "@/hooks/useSettings";
 import { MediaUploader } from "@/components/cms/MediaUploader";
 import { WebPageAdd } from "@/components/cms/WebPageAdd";
+import { DividerAdd } from "@/components/cms/DividerAdd";
 import { ItemList } from "@/components/cms/ItemList";
 import { GlobalSettings } from "@/components/cms/GlobalSettings";
 import { PinGate } from "@/components/cms/PinGate";
@@ -91,6 +92,11 @@ export default function CMSContent() {
                 onUpload={addItem}
               />
               <WebPageAdd
+                itemCount={items.length}
+                defaultDuration={settings.default_item_duration_seconds}
+                onAdd={addItem}
+              />
+              <DividerAdd
                 itemCount={items.length}
                 defaultDuration={settings.default_item_duration_seconds}
                 onAdd={addItem}

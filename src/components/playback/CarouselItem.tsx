@@ -1,18 +1,20 @@
 "use client";
 
 import { useRef, useEffect } from "react";
-import type { CarouselItem as CarouselItemType } from "@/lib/types";
+import type { CarouselItem as CarouselItemType, CarouselSettings } from "@/lib/types";
 
 interface CarouselItemProps {
   item: CarouselItemType;
   isActive: boolean;
   onVideoEnded: () => void;
+  settings: CarouselSettings;
 }
 
 export function CarouselItemDisplay({
   item,
   isActive,
   onVideoEnded,
+  settings,
 }: CarouselItemProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -25,6 +27,35 @@ export function CarouselItemDisplay({
       videoRef.current.pause();
     }
   }, [isActive]);
+
+  if (item.type === "divider") {
+    return (
+      <div className="absolute inset-0 flex flex-col items-center justify-center bg-black text-white px-6 sm:px-10">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/ideo.svg"
+          alt="IDEO"
+          className="mb-8 sm:mb-10 w-[min(40vw,220px)] max-h-24 object-contain"
+          draggable={false}
+        />
+        {settings.divider_title ? (
+          <h1 className="text-center text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight max-w-4xl">
+            {settings.divider_title}
+          </h1>
+        ) : null}
+        {settings.divider_subtitle ? (
+          <p className="mt-4 text-center text-lg sm:text-xl text-white/85 max-w-3xl">
+            {settings.divider_subtitle}
+          </p>
+        ) : null}
+        {settings.divider_body ? (
+          <p className="mt-6 text-center text-base sm:text-lg text-white/70 max-w-2xl whitespace-pre-wrap leading-relaxed">
+            {settings.divider_body}
+          </p>
+        ) : null}
+      </div>
+    );
+  }
 
   if (item.type === "web") {
     return (

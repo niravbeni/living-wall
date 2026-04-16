@@ -91,6 +91,7 @@ export function Carousel() {
             item={currentItem}
             isActive={true}
             onVideoEnded={onVideoEnded}
+            settings={settings}
           />
         </TransitionWrapper>
       )}

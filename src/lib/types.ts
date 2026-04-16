@@ -1,6 +1,6 @@
 export interface CarouselItem {
   id: string;
-  type: "image" | "video" | "web";
+  type: "image" | "video" | "web" | "divider";
   title: string;
   media_url: string;
   thumbnail_url: string;
@@ -19,6 +19,11 @@ export interface CarouselSettings {
   transition_duration_ms: number;
   default_item_duration_seconds: number;
   show_progress_bar: boolean;
+  /** Full-screen divider slides (black + logo + copy); duration per divider slide */
+  divider_title: string;
+  divider_subtitle: string;
+  divider_body: string;
+  divider_duration_seconds: number;
 }
 
 export type TransitionType = "crossfade" | "slide" | "zoomFade" | "cardStack";
@@ -37,6 +42,10 @@ export const DEFAULT_SETTINGS: CarouselSettings = {
   transition_duration_ms: 800,
   default_item_duration_seconds: 5,
   show_progress_bar: true,
+  divider_title: "",
+  divider_subtitle: "",
+  divider_body: "",
+  divider_duration_seconds: 5,
 };
 
 export const ACCEPTED_IMAGE_TYPES = {
@@ -57,3 +66,5 @@ export const ACCEPTED_FILE_TYPES = {
 };
 
 export const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+
+export const DIVIDER_MEDIA_PLACEHOLDER = "divider://";

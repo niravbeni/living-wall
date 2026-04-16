@@ -16,7 +16,7 @@ async function fetchCarouselSettings(): Promise<CarouselSettings> {
     console.error("Failed to fetch settings:", error);
     return DEFAULT_SETTINGS;
   }
-  return data;
+  return { ...DEFAULT_SETTINGS, ...data };
 }
 
 export function useSettings() {

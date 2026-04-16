@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import type { CarouselItem, CarouselSettings } from "@/lib/types";
+import { DEFAULT_SETTINGS } from "@/lib/types";
 
 const IDLE_RESUME_DELAY = 10_000;
 
@@ -50,12 +51,25 @@ export function useCarouselPlayback(
 
   const currentItem = items[safeIndex] ?? null;
 
-  const itemDuration = useMemo(
-    () =>
-      (currentItem?.duration_seconds ??
-        settings.default_item_duration_seconds) * 1000,
-    [currentItem?.duration_seconds, settings.default_item_duration_seconds]
-  );
+  const itemDuration = useMemo(() => {
+    if (!currentItem) {
+      return settings.default_item_duration_seconds * 1000;
+    }
+    if (currentItem.type === "divider") {
+      return (
+        (settings.divider_duration_seconds ??
+          DEFAULT_SETTINGS.divider_duration_seconds) * 1000
+      );
+    }
+    return (
+      (currentItem.duration_seconds ?? settings.default_item_duration_seconds) *
+      1000
+    );
+  }, [
+    currentItem,
+    settings.default_item_duration_seconds,
+    settings.divider_duration_seconds,
+  ]);
 
   const lock = useCallback((durationMs: number) => {
     lockedRef.current = true;

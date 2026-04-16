@@ -21,6 +21,7 @@ import {
   Eye,
   EyeOff,
   Globe,
+  LayoutTemplate,
 } from "lucide-react";
 
 interface ItemCardProps {
@@ -84,6 +85,10 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
             <div className="flex h-full w-full items-center justify-center bg-muted">
               <Globe className="h-7 w-7 text-muted-foreground" />
             </div>
+          ) : item.type === "divider" ? (
+            <div className="flex h-full w-full items-center justify-center bg-black">
+              <LayoutTemplate className="h-6 w-6 text-white/40" />
+            </div>
           ) : item.type === "video" ? (
             <video
               src={item.media_url}
@@ -114,6 +119,8 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
             <Badge variant="secondary" className="text-xs gap-1">
               {item.type === "web" ? (
                 <Globe className="h-3 w-3" />
+              ) : item.type === "divider" ? (
+                <LayoutTemplate className="h-3 w-3" />
               ) : item.type === "video" ? (
                 <Video className="h-3 w-3" />
               ) : (
@@ -124,6 +131,10 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
             {item.type === "web" ? (
               <span className="text-xs text-muted-foreground">
                 Manual advance
+              </span>
+            ) : item.type === "divider" ? (
+              <span className="text-xs text-muted-foreground">
+                Timed in Settings
               </span>
             ) : (
               <span className="text-xs text-muted-foreground">
@@ -210,6 +221,16 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
                 arrows. Some sites block embedding in iframes.
               </p>
             </div>
+          ) : item.type === "divider" ? (
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              On-screen copy, logo, and how long divider slides stay up are set
+              under{" "}
+              <span className="font-medium text-foreground">
+                Settings → Divider intros
+              </span>
+              . Reorder this block in the list to place it before the content it
+              introduces.
+            </p>
           ) : (
             <>
               <div className="space-y-2">

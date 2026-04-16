@@ -4,7 +4,7 @@
 -- 1. Create carousel_items table
 create table if not exists carousel_items (
   id uuid default gen_random_uuid() primary key,
-  type text not null check (type in ('image', 'video', 'web')),
+  type text not null check (type in ('image', 'video', 'web', 'divider')),
   title text default '',
   media_url text not null,
   thumbnail_url text default '',
@@ -22,7 +22,11 @@ create table if not exists carousel_settings (
   transition_type text default 'crossfade' check (transition_type in ('crossfade', 'slide', 'zoomFade', 'cardStack')),
   transition_duration_ms integer default 800,
   default_item_duration_seconds integer default 5,
-  show_progress_bar boolean default true
+  show_progress_bar boolean default true,
+  divider_title text default '',
+  divider_subtitle text default '',
+  divider_body text default '',
+  divider_duration_seconds integer default 5
 );
 
 -- 3. Insert default settings row
