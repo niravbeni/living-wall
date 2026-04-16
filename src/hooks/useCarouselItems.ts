@@ -4,6 +4,15 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import type { CarouselItem } from "@/lib/types";
 
+function normalizeItem(
+  row: CarouselItem & { visible_in_carousel?: boolean | null }
+): CarouselItem {
+  return {
+    ...row,
+    visible_in_carousel: row.visible_in_carousel !== false,
+  };
+}
+
 async function fetchCarouselItems(): Promise<CarouselItem[]> {
   const { data, error } = await supabase
     .from("carousel_items")
@@ -14,7 +23,9 @@ async function fetchCarouselItems(): Promise<CarouselItem[]> {
     console.error("Failed to fetch carousel items:", error);
     return [];
   }
-  return data ?? [];
+  return (data ?? []).map((row) =>
+    normalizeItem(row as CarouselItem & { visible_in_carousel?: boolean | null })
+  );
 }
 
 export function useCarouselItems() {

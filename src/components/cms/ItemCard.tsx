@@ -17,6 +17,8 @@ import {
   ChevronUp,
   Image as ImageIcon,
   Video,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 interface ItemCardProps {
@@ -54,8 +56,14 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
     }
   };
 
+  const isVisible = item.visible_in_carousel !== false;
+
   return (
-    <Card ref={setNodeRef} style={style} className="overflow-hidden">
+    <Card
+      ref={setNodeRef}
+      style={style}
+      className={`overflow-hidden transition-opacity ${!isVisible ? "opacity-60" : ""}`}
+    >
       <div
         className="flex items-center gap-3 p-3 cursor-pointer hover:bg-muted/40 transition-colors"
         onClick={() => setExpanded(!expanded)}
@@ -96,7 +104,7 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
           <p className="text-sm font-medium truncate">
             {item.title || "Untitled"}
           </p>
-          <div className="flex items-center gap-2 mt-1">
+          <div className="flex flex-wrap items-center gap-2 mt-1">
             <Badge variant="secondary" className="text-xs gap-1">
               {item.type === "video" ? (
                 <Video className="h-3 w-3" />
@@ -108,6 +116,38 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
             <span className="text-xs text-muted-foreground">
               {item.duration_seconds}s
             </span>
+            {!isVisible && (
+              <Badge variant="outline" className="text-xs gap-1">
+                <EyeOff className="h-3 w-3" />
+                Hidden
+              </Badge>
+            )}
+          </div>
+        </div>
+
+        <div
+          className="flex items-center gap-2 shrink-0"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex flex-col items-end gap-0.5">
+            <span className="text-[10px] uppercase tracking-wide text-muted-foreground hidden sm:block">
+              Display
+            </span>
+            <div className="flex items-center gap-1.5">
+              {isVisible ? (
+                <Eye className="h-3.5 w-3.5 text-muted-foreground" />
+              ) : (
+                <EyeOff className="h-3.5 w-3.5 text-muted-foreground" />
+              )}
+              <Switch
+                id={`visible-${item.id}`}
+                className="cursor-pointer scale-90"
+                checked={isVisible}
+                onCheckedChange={(checked) =>
+                  onUpdate(item.id, { visible_in_carousel: checked })
+                }
+              />
+            </div>
           </div>
         </div>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback, useMemo } from "react";
 import { useCarouselItems } from "@/hooks/useCarouselItems";
 import { useSettings } from "@/hooks/useSettings";
 import { useCarouselPlayback } from "@/hooks/useCarouselPlayback";
@@ -15,6 +15,11 @@ export function Carousel() {
   const containerRef = useRef<HTMLDivElement>(null);
   const { toggleFullscreen } = useFullscreen(containerRef);
 
+  const visibleItems = useMemo(
+    () => items.filter((i) => i.visible_in_carousel !== false),
+    [items]
+  );
+
   const {
     currentIndex,
     currentItem,
@@ -24,7 +29,7 @@ export function Carousel() {
     goToNext,
     goToPrev,
     onVideoEnded,
-  } = useCarouselPlayback(items, settings);
+  } = useCarouselPlayback(visibleItems, settings);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -59,7 +64,7 @@ export function Carousel() {
     return <div className="h-screen w-screen bg-black" />;
   }
 
-  if (items.length === 0) {
+  if (visibleItems.length === 0) {
     return <div className="h-screen w-screen bg-black" />;
   }
 

@@ -10,6 +10,7 @@ create table if not exists carousel_items (
   thumbnail_url text default '',
   duration_seconds integer default 5,
   video_loop boolean default false,
+  visible_in_carousel boolean default true,
   sort_order integer default 0,
   created_at timestamptz default now()
 );

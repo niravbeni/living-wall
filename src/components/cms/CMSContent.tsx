@@ -27,6 +27,9 @@ export default function CMSContent() {
     );
   }
 
+  const showingCount = items.filter((i) => i.visible_in_carousel !== false)
+    .length;
+
   return (
     <PinGate>
       <div className="min-h-screen bg-background">
@@ -58,7 +61,7 @@ export default function CMSContent() {
               }`}
             >
               <LayoutList className="h-4 w-4" />
-              Content ({items.length})
+              Content ({showingCount}/{items.length})
             </button>
             <button
               onClick={() => setActiveTab("settings")}
@@ -75,6 +78,12 @@ export default function CMSContent() {
 
           {activeTab === "content" ? (
             <div className="space-y-6">
+              {items.length > 0 && (
+                <p className="text-xs text-muted-foreground -mt-1">
+                  Toggle <span className="font-medium">Display</span> on each
+                  row to include or hide items on the wall without removing them.
+                </p>
+              )}
               <MediaUploader
                 itemCount={items.length}
                 defaultDuration={settings.default_item_duration_seconds}

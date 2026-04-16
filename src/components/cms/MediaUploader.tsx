@@ -53,6 +53,7 @@ export function MediaUploader({
             thumbnail_url: "",
             duration_seconds: defaultDuration,
             video_loop: false,
+            visible_in_carousel: true,
             sort_order: itemCount + i,
           });
         } catch (err) {
