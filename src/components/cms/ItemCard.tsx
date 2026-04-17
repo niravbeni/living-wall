@@ -18,6 +18,7 @@ import {
   Trash2,
   ChevronDown,
   ChevronUp,
+  Download,
   Image as ImageIcon,
   Video,
   Eye,
@@ -89,6 +90,7 @@ function BufferedTextarea({
 export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   const {
     attributes,
@@ -119,6 +121,28 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
     (updates: Partial<CarouselItem>) => onUpdate(item.id, updates),
     [item.id, onUpdate]
   );
+
+  const handleDownload = async () => {
+    if (!item.media_url) return;
+    setDownloading(true);
+    try {
+      const res = await fetch(item.media_url);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      const ext = item.media_url.split(".").pop()?.split("?")[0] ?? "";
+      a.download = `${item.title || "download"}${ext ? `.${ext}` : ""}`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Download failed:", err);
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   const isVisible = item.visible_in_carousel !== false;
   const isLegacyDivider = item.type === "divider";
@@ -453,6 +477,19 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
                     </div>
                   </div>
                 </>
+              )}
+
+              {(item.type === "image" || item.type === "video") && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDownload}
+                  disabled={downloading}
+                  className="w-full cursor-pointer"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  {downloading ? "Downloading..." : "Download file"}
+                </Button>
               )}
 
               <Button
