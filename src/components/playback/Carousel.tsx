@@ -41,6 +41,7 @@ export function Carousel() {
     (e: KeyboardEvent) => {
       switch (e.key) {
         case " ":
+        case "Enter":
         case "ArrowRight":
           e.preventDefault();
           goToNext();
