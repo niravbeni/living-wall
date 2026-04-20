@@ -46,7 +46,7 @@ function BufferedInput({
   onCommit: (v: string) => void;
 } & Omit<
   React.ComponentProps<typeof Input>,
-  "value" | "onChange" | "onBlur"
+  "value" | "onChange" | "onBlur" | "onKeyDown"
 >) {
   const [local, setLocal] = useState(value);
   useEffect(() => setLocal(value), [value]);
@@ -57,6 +57,12 @@ function BufferedInput({
       onChange={(e) => setLocal(e.target.value)}
       onBlur={() => {
         if (local !== value) onCommit(local);
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          (e.target as HTMLInputElement).blur();
+        }
       }}
     />
   );
