@@ -28,3 +28,17 @@ export function getPublicUrl(path: string): string {
   const { data } = getSupabase().storage.from("media").getPublicUrl(path);
   return data.publicUrl;
 }
+
+const STORAGE_PATH_RE = /\/storage\/v1\/object\/public\/media\/(.+)$/;
+
+/**
+ * Rewrite a Supabase Storage URL to go through `/api/media/` so Vercel's
+ * edge CDN caches the file and Supabase egress stays low.
+ * Non-storage URLs (web/iframe) are returned unchanged.
+ */
+export function proxyMediaUrl(url: string): string {
+  if (!url) return url;
+  const match = url.match(STORAGE_PATH_RE);
+  if (match) return `/api/media/${match[1]}`;
+  return url;
+}

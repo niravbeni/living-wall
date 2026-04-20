@@ -43,7 +43,7 @@ export function MediaUploader({
 
           const { error: uploadError } = await supabase.storage
             .from("media")
-            .upload(fileName, file, { cacheControl: "3600", upsert: false });
+            .upload(fileName, file, { cacheControl: "31536000", upsert: false });
 
           if (uploadError) throw uploadError;
 

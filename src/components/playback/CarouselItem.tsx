@@ -3,6 +3,7 @@
 import { useRef, useEffect, useMemo } from "react";
 import type { CarouselItem as CarouselItemType } from "@/lib/types";
 import type { PlaybackSlide } from "@/lib/playback-slides";
+import { proxyMediaUrl } from "@/lib/supabase";
 
 function textOnBackground(hex: string): string {
   const raw = hex.replace("#", "").trim();
@@ -32,6 +33,7 @@ export function CarouselItemDisplay({
 
   const bg = item.divider_background || "#000000";
   const fg = useMemo(() => textOnBackground(bg), [bg]);
+  const mediaSrc = useMemo(() => proxyMediaUrl(item.media_url), [item.media_url]);
 
   useEffect(() => {
     if (!videoRef.current) return;
@@ -87,7 +89,7 @@ export function CarouselItemDisplay({
   if (item.type === "web") {
     return (
       <iframe
-        src={isActive ? item.media_url : "about:blank"}
+        src={isActive ? mediaSrc : "about:blank"}
         title={item.title || "Web page"}
         className="absolute inset-0 h-full w-full border-0 bg-white"
         sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads"
@@ -101,7 +103,7 @@ export function CarouselItemDisplay({
     return (
       <video
         ref={videoRef}
-        src={item.media_url}
+        src={mediaSrc}
         className="absolute inset-0 h-full w-full object-cover"
         muted
         playsInline
@@ -114,7 +116,7 @@ export function CarouselItemDisplay({
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={item.media_url}
+      src={mediaSrc}
       alt={item.title}
       className="absolute inset-0 h-full w-full object-cover"
       draggable={false}
