@@ -5,7 +5,7 @@ import type { PlaybackSlide } from "@/lib/playback-slides";
 import type { CarouselSettings } from "@/lib/types";
 import { DEFAULT_SETTINGS } from "@/lib/types";
 
-const IDLE_RESUME_DELAY = 10_000;
+const IDLE_RESUME_DELAY = 15_000;
 
 interface PlaybackState {
   currentIndex: number;
@@ -95,11 +95,6 @@ export function useCarouselPlayback(
       clearTimer();
       lock(settings.transition_duration_ms + 50);
 
-      const shouldPause =
-        settings.auto_loop &&
-        currentSlide?.phase === "content" &&
-        currentItem?.type === "web";
-
       setState((prev) => {
         const next =
           dir > 0
@@ -110,12 +105,12 @@ export function useCarouselPlayback(
           currentIndex: next,
           progress: 0,
           direction: dir,
-          paused: !!shouldPause,
+          paused: settings.auto_loop ? true : prev.paused,
         };
       });
       startTimeRef.current = Date.now();
 
-      if (shouldPause) {
+      if (settings.auto_loop) {
         startIdleTimer();
       }
     },
@@ -126,8 +121,6 @@ export function useCarouselPlayback(
       settings.transition_duration_ms,
       settings.auto_loop,
       startIdleTimer,
-      currentSlide?.phase,
-      currentItem?.type,
     ]
   );
 
@@ -145,21 +138,16 @@ export function useCarouselPlayback(
       clearTimer();
       lock(settings.transition_duration_ms + 50);
 
-      const shouldPause =
-        settings.auto_loop &&
-        currentSlide?.phase === "content" &&
-        currentItem?.type === "web";
-
       setState((prev) => ({
         ...prev,
         currentIndex: index,
         progress: 0,
         direction: index > prev.currentIndex ? 1 : -1,
-        paused: !!shouldPause,
+        paused: settings.auto_loop ? true : prev.paused,
       }));
       startTimeRef.current = Date.now();
 
-      if (shouldPause) {
+      if (settings.auto_loop) {
         startIdleTimer();
       }
     },
@@ -170,8 +158,6 @@ export function useCarouselPlayback(
       settings.transition_duration_ms,
       settings.auto_loop,
       startIdleTimer,
-      currentSlide?.phase,
-      currentItem?.type,
     ]
   );
 

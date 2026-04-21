@@ -77,14 +77,12 @@ export function Carousel() {
 
   const isWebContent =
     currentSlide?.phase === "content" && currentItem?.type === "web";
-  const allowClickAdvance =
-    !settings.auto_loop || paused || isWebContent;
 
   return (
     <div
       ref={containerRef}
       className="relative h-screen w-screen overflow-hidden bg-black cursor-none"
-      onClick={allowClickAdvance ? goToNext : undefined}
+      onClick={goToNext}
     >
       {currentSlide && currentItem && (
         <TransitionWrapper
