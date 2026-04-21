@@ -48,31 +48,31 @@ const zoomFade: TransitionConfig = {
 const zoomBurst: TransitionConfig = {
   variants: {
     enter: () => ({
-      scale: 0.2,
+      scale: 1.18,
       opacity: 0,
-      filter: "blur(16px)",
-      zIndex: 2,
+      filter: "blur(8px)",
+      zIndex: 3,
     }),
     center: {
       scale: 1,
       opacity: 1,
       filter: "blur(0px)",
-      zIndex: 2,
+      zIndex: 3,
     },
     exit: () => ({
-      scale: 2.6,
+      scale: 0.72,
       opacity: 0,
-      filter: "blur(20px)",
+      filter: "blur(12px)",
       zIndex: 1,
     }),
   },
   transition: {
     type: "spring",
-    stiffness: 110,
+    stiffness: 170,
     damping: 18,
     mass: 0.9,
-    opacity: { duration: 0.55, ease: [0.16, 1, 0.3, 1] },
-    filter: { duration: 0.7, ease: [0.16, 1, 0.3, 1] },
+    opacity: { duration: 0.65, ease: [0.22, 1, 0.36, 1] },
+    filter: { duration: 0.7, ease: [0.22, 1, 0.36, 1] },
   },
 };
 
