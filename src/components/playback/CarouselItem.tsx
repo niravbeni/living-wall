@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useMemo } from "react";
+import { useRef, useEffect, useMemo, useState } from "react";
 import type { CarouselItem as CarouselItemType } from "@/lib/types";
 import type { PlaybackSlide } from "@/lib/playback-slides";
 import { proxyMediaUrl } from "@/lib/supabase";
@@ -34,6 +34,20 @@ export function CarouselItemDisplay({
   const bg = item.divider_background || "#000000";
   const fg = useMemo(() => textOnBackground(bg), [bg]);
   const mediaSrc = useMemo(() => proxyMediaUrl(item.media_url), [item.media_url]);
+
+  const [captionVisible, setCaptionVisible] = useState(true);
+  useEffect(() => {
+    if (phase !== "content") return;
+    if (item.type !== "image" && item.type !== "video") return;
+    setCaptionVisible(true);
+    const CAPTION_VISIBLE_MS = 5000;
+    const CAPTION_FADE_MS = 600;
+    const t = setTimeout(
+      () => setCaptionVisible(false),
+      CAPTION_VISIBLE_MS - CAPTION_FADE_MS
+    );
+    return () => clearTimeout(t);
+  }, [item.id, phase, item.type]);
 
   useEffect(() => {
     if (!videoRef.current) return;
@@ -100,27 +114,80 @@ export function CarouselItemDisplay({
     );
   }
 
+  const captionTitle = item.title?.trim();
+  const captionSubtitle = item.divider_subtitle?.trim();
+  const hasCaption = Boolean(captionTitle || captionSubtitle);
+
   if (item.type === "video") {
     return (
-      <video
-        ref={videoRef}
-        src={mediaSrc}
-        className="absolute inset-0 h-full w-full object-cover"
-        muted
-        playsInline
-        loop={item.video_loop}
-        onEnded={onVideoEnded}
-      />
+      <>
+        <video
+          ref={videoRef}
+          src={mediaSrc}
+          className="absolute inset-0 h-full w-full object-cover"
+          muted
+          playsInline
+          loop={item.video_loop}
+          onEnded={onVideoEnded}
+        />
+        {hasCaption && (
+          <CaptionOverlay
+            title={captionTitle}
+            subtitle={captionSubtitle}
+            visible={captionVisible}
+          />
+        )}
+      </>
     );
   }
 
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={mediaSrc}
-      alt={item.title}
-      className="absolute inset-0 h-full w-full object-cover"
-      draggable={false}
-    />
+    <>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={mediaSrc}
+        alt={item.title}
+        className="absolute inset-0 h-full w-full object-cover"
+        draggable={false}
+      />
+      {hasCaption && (
+        <CaptionOverlay
+          title={captionTitle}
+          subtitle={captionSubtitle}
+          visible={captionVisible}
+        />
+      )}
+    </>
+  );
+}
+
+interface CaptionOverlayProps {
+  title?: string;
+  subtitle?: string;
+  visible: boolean;
+}
+
+function CaptionOverlay({ title, subtitle, visible }: CaptionOverlayProps) {
+  return (
+    <div
+      className="pointer-events-none absolute bottom-6 left-6 sm:bottom-10 sm:left-10 max-w-[70%] transition-opacity duration-[600ms] ease-out"
+      style={{
+        opacity: visible ? 1 : 0,
+        color: "#fafafa",
+        fontFamily: "'FH Oscar', sans-serif",
+        textShadow: "0 2px 16px rgba(0,0,0,0.55)",
+      }}
+    >
+      {title ? (
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold leading-tight">
+          {title}
+        </h2>
+      ) : null}
+      {subtitle ? (
+        <p className="mt-1 sm:mt-2 text-base sm:text-lg md:text-xl font-light opacity-90 leading-snug">
+          {subtitle}
+        </p>
+      ) : null}
+    </div>
   );
 }
