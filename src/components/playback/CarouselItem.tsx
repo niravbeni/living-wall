@@ -170,12 +170,14 @@ interface CaptionOverlayProps {
 function CaptionOverlay({ title, subtitle, visible }: CaptionOverlayProps) {
   return (
     <div
-      className="pointer-events-none absolute bottom-6 left-6 sm:bottom-10 sm:left-10 max-w-[70%] transition-opacity duration-[600ms] ease-out"
+      className="pointer-events-none absolute bottom-6 left-6 sm:bottom-10 sm:left-10 max-w-[70%] rounded-2xl px-5 py-4 sm:px-7 sm:py-5 transition-opacity duration-[600ms] ease-out backdrop-blur-md"
       style={{
         opacity: visible ? 1 : 0,
         color: "#fafafa",
         fontFamily: "'FH Oscar', sans-serif",
-        textShadow: "0 2px 16px rgba(0,0,0,0.55)",
+        background:
+          "linear-gradient(135deg, rgba(0,0,0,0.72) 0%, rgba(20,20,20,0.55) 60%, rgba(40,40,40,0.35) 100%)",
+        boxShadow: "0 8px 32px rgba(0,0,0,0.35)",
       }}
     >
       {title ? (
