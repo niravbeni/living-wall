@@ -6,9 +6,14 @@ import {
   useCallback,
   useMemo,
   useState,
-  type CSSProperties,
 } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import {
+  AnimatePresence,
+  motion,
+  useMotionValue,
+  useMotionTemplate,
+  animate,
+} from "framer-motion";
 import type { TransitionType } from "@/lib/types";
 import { useCarouselItems } from "@/hooks/useCarouselItems";
 import { useSettings } from "@/hooks/useSettings";
@@ -167,94 +172,72 @@ export function Carousel() {
   );
 }
 
+/**
+ * Apple Intelligence style border pulse.
+ *
+ * Shape: layered inset box-shadows in Alchemy green. box-shadow has true
+ * gaussian falloff so the glow has zero hard edges / mask shoulders /
+ * ring seams — it blooms smoothly from bright at the screen edge to
+ * transparent toward the center.
+ *
+ * Motion: a rotating conic gradient (Alchemy + Deep) is overlaid with
+ * `mix-blend-mode: overlay` and softly masked to the edge zone, giving
+ * the color a subtle flowing shift without introducing any outline.
+ */
 function AppleGlowPulse({ durationMs }: { durationMs: number }) {
   const seconds = durationMs / 1000;
 
-  const gradient =
-    "conic-gradient(from 45deg, #D9FF00 0%, #151F27 20%, #D9FF00 40%, #151F27 60%, #D9FF00 80%, #151F27 95%, #D9FF00 100%)";
+  const angle = useMotionValue(0);
 
-  const ringMask: CSSProperties = {
-    WebkitMask:
-      "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-    WebkitMaskComposite: "xor",
-    mask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-    maskComposite: "exclude",
+  useEffect(() => {
+    const c = animate(angle, 360, {
+      duration: 3.2,
+      ease: "linear",
+      repeat: Infinity,
+    });
+    return () => c.stop();
+  }, [angle]);
+
+  const conic = useMotionTemplate`conic-gradient(from ${angle}deg at 50% 50%, #D9FF00, #B9E800, #7B92A5, #151F27, #D9FF00, #B9E800, #D9FF00)`;
+
+  const opacityKeyframes: number[] = [0, 1, 0.95, 0];
+  const opacityTransition = {
+    duration: seconds,
+    times: [0, 0.22, 0.65, 1] as number[],
+    ease: "easeOut" as const,
   };
 
   return (
-    <>
-      {/* Outermost soft bloom — wide alchemy haze with Deep tinge */}
-      <motion.div
-        className="pointer-events-none absolute inset-0 z-50"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: [0, 0.55, 0.3, 0] }}
-        exit={{ opacity: 0 }}
-        transition={{
-          duration: seconds,
-          times: [0, 0.22, 0.6, 1],
-          ease: "easeOut",
-        }}
+    <motion.div
+      className="pointer-events-none absolute inset-0 z-50"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: opacityKeyframes }}
+      exit={{ opacity: 0 }}
+      transition={opacityTransition}
+    >
+      <div
+        className="absolute inset-0"
         style={{
-          boxShadow:
-            "inset 0 0 160px 40px rgba(217,255,0,0.32), inset 0 0 380px 90px rgba(21,31,39,0.28)",
+          boxShadow: [
+            "inset 0 0 40px 0px rgba(217, 255, 0, 0.95)",
+            "inset 0 0 100px 0px rgba(217, 255, 0, 0.55)",
+            "inset 0 0 180px 0px rgba(217, 255, 0, 0.22)",
+          ].join(", "),
         }}
       />
-
-      {/* Wide blurred border gradient — the bloom of the glow */}
       <motion.div
-        className="pointer-events-none absolute inset-0 z-50"
-        initial={{ opacity: 0, scale: 0.995 }}
-        animate={{ opacity: [0, 1, 0.8, 0], scale: [0.995, 1, 1.005, 1.01] }}
-        exit={{ opacity: 0 }}
-        transition={{
-          duration: seconds,
-          times: [0, 0.22, 0.6, 1],
-          ease: [0.22, 1, 0.36, 1],
-        }}
+        className="absolute inset-0"
         style={{
-          padding: 36,
-          background: gradient,
-          filter: "blur(22px) saturate(140%)",
-          ...ringMask,
+          background: conic,
+          mixBlendMode: "overlay",
+          opacity: 0.6,
+          WebkitMaskImage:
+            "radial-gradient(ellipse 120% 120% at 50% 50%, transparent 55%, black 100%)",
+          maskImage:
+            "radial-gradient(ellipse 120% 120% at 50% 50%, transparent 55%, black 100%)",
+          filter: "blur(24px) saturate(160%)",
         }}
       />
-
-      {/* Mid blurred border gradient — fills out the glow body */}
-      <motion.div
-        className="pointer-events-none absolute inset-0 z-50"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: [0, 1, 0.75, 0] }}
-        exit={{ opacity: 0 }}
-        transition={{
-          duration: seconds,
-          times: [0, 0.2, 0.55, 1],
-          ease: "easeOut",
-        }}
-        style={{
-          padding: 14,
-          background: gradient,
-          filter: "blur(8px) saturate(130%)",
-          ...ringMask,
-        }}
-      />
-
-      {/* Sharp inner stroke — the crisp Apple-Intelligence line */}
-      <motion.div
-        className="pointer-events-none absolute inset-0 z-50"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: [0, 1, 0.9, 0] }}
-        exit={{ opacity: 0 }}
-        transition={{
-          duration: seconds,
-          times: [0, 0.18, 0.55, 1],
-          ease: "easeOut",
-        }}
-        style={{
-          padding: 3,
-          background: gradient,
-          ...ringMask,
-        }}
-      />
-    </>
+    </motion.div>
   );
 }
