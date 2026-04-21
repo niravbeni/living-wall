@@ -16,7 +16,7 @@ function normalizeItem(
     video_speed:
       typeof vSpeed === "number" && !Number.isNaN(vSpeed)
         ? Math.max(0.25, Math.min(4, vSpeed))
-        : 2,
+        : 1.5,
     divider_enabled: row.divider_enabled === true,
     divider_title: row.divider_title ?? "",
     divider_subtitle: row.divider_subtitle ?? "",

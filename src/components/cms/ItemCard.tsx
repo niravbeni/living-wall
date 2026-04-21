@@ -395,6 +395,7 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
                         <div className="relative h-4 text-xs text-muted-foreground">
                           <span className="absolute left-0">0.25x</span>
                           <span className="absolute" style={{ left: "20%" }}>1x</span>
+                          <span className="absolute" style={{ left: "33.3%" }}>1.5x</span>
                           <span className="absolute" style={{ left: "46.7%" }}>2x</span>
                           <span className="absolute right-0">4x</span>
                         </div>

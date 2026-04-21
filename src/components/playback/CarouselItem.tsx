@@ -38,7 +38,7 @@ export function CarouselItemDisplay({
   useEffect(() => {
     if (!videoRef.current) return;
     if (isActive) {
-      videoRef.current.playbackRate = item.video_speed ?? 2;
+      videoRef.current.playbackRate = item.video_speed ?? 1.5;
       videoRef.current.currentTime = 0;
       videoRef.current.play().catch(() => {});
     } else {
