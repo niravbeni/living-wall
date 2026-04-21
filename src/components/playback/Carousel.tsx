@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useCallback, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import type { TransitionType } from "@/lib/types";
 import { useCarouselItems } from "@/hooks/useCarouselItems";
 import { useSettings } from "@/hooks/useSettings";
@@ -60,15 +61,25 @@ export function Carousel() {
     };
   }, []);
 
-  const ZOOM_BURST_DURATION_MS = 1200;
+  const ZOOM_BURST_DURATION_MS = 1250;
+  const PULSE_DURATION_MS = 800;
+  const ADVANCE_DELAY_MS = 160;
+  const [pulseKey, setPulseKey] = useState(0);
+
+  const triggerBurst = useCallback(() => {
+    setPulseKey((k) => k + 1);
+    triggerOverride("zoomBurst", ZOOM_BURST_DURATION_MS + ADVANCE_DELAY_MS);
+    setTimeout(() => {
+      goToNext();
+    }, ADVANCE_DELAY_MS);
+  }, [goToNext, triggerOverride]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       switch (e.key) {
         case "Enter":
           e.preventDefault();
-          triggerOverride("zoomBurst", ZOOM_BURST_DURATION_MS);
-          goToNext();
+          triggerBurst();
           break;
         case " ":
         case "ArrowRight":
@@ -86,7 +97,7 @@ export function Carousel() {
           break;
       }
     },
-    [goToNext, goToPrev, toggleFullscreen, triggerOverride]
+    [goToNext, goToPrev, toggleFullscreen, triggerBurst]
   );
 
   useEffect(() => {
@@ -139,6 +150,46 @@ export function Carousel() {
           settings.show_progress_bar && !paused && !isWebContent
         }
       />
+
+      <AnimatePresence>
+        {pulseKey > 0 && (
+          <motion.div
+            key={pulseKey}
+            className="pointer-events-none absolute inset-0 z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0, 1, 0.6, 0] }}
+            exit={{ opacity: 0 }}
+            transition={{
+              duration: PULSE_DURATION_MS / 1000,
+              times: [0, 0.18, 0.55, 1],
+              ease: "easeOut",
+            }}
+            style={{
+              boxShadow:
+                "inset 0 0 140px 20px #b6ff3d, inset 0 0 320px 80px rgba(182,255,61,0.45)",
+            }}
+          >
+            <motion.div
+              className="absolute inset-0"
+              initial={{ opacity: 0, scale: 1.02 }}
+              animate={{
+                opacity: [0, 0.9, 0],
+                scale: [1.02, 1, 1.01],
+              }}
+              transition={{
+                duration: PULSE_DURATION_MS / 1000,
+                times: [0, 0.25, 1],
+                ease: "easeOut",
+              }}
+              style={{
+                border: "3px solid #b6ff3d",
+                boxShadow:
+                  "0 0 24px #b6ff3d, inset 0 0 24px rgba(182,255,61,0.6)",
+              }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
