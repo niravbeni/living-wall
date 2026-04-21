@@ -38,7 +38,6 @@ export function CarouselItemDisplay({
   const [captionVisible, setCaptionVisible] = useState(true);
   useEffect(() => {
     if (phase !== "content") return;
-    if (item.type !== "image" && item.type !== "video") return;
     setCaptionVisible(true);
     const CAPTION_VISIBLE_MS = 5000;
     const CAPTION_FADE_MS = 600;
@@ -47,7 +46,7 @@ export function CarouselItemDisplay({
       CAPTION_VISIBLE_MS - CAPTION_FADE_MS
     );
     return () => clearTimeout(t);
-  }, [item.id, phase, item.type]);
+  }, [item.id, phase]);
 
   useEffect(() => {
     if (!videoRef.current) return;
@@ -101,19 +100,6 @@ export function CarouselItemDisplay({
     );
   }
 
-  if (item.type === "web") {
-    return (
-      <iframe
-        src={isActive ? mediaSrc : "about:blank"}
-        title={item.title || "Web page"}
-        className="absolute inset-0 h-full w-full border-0 bg-white"
-        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads"
-        referrerPolicy="no-referrer-when-downgrade"
-        loading="eager"
-      />
-    );
-  }
-
   const captionTitle =
     item.caption_title?.trim() || item.divider_title?.trim();
   const captionSubtitle =
@@ -121,6 +107,28 @@ export function CarouselItemDisplay({
   const hasCaption =
     item.caption_enabled !== false &&
     Boolean(captionTitle || captionSubtitle);
+
+  if (item.type === "web") {
+    return (
+      <>
+        <iframe
+          src={isActive ? mediaSrc : "about:blank"}
+          title={item.title || "Web page"}
+          className="absolute inset-0 h-full w-full border-0 bg-white"
+          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads"
+          referrerPolicy="no-referrer-when-downgrade"
+          loading="eager"
+        />
+        {hasCaption && (
+          <CaptionOverlay
+            title={captionTitle}
+            subtitle={captionSubtitle}
+            visible={captionVisible}
+          />
+        )}
+      </>
+    );
+  }
 
   if (item.type === "video") {
     return (

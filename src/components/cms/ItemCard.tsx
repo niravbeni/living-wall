@@ -518,7 +518,7 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
                 </>
               )}
 
-              {(item.type === "image" || item.type === "video") && (
+              {isContentItem && (
                 <>
                   <Separator />
                   <div>
