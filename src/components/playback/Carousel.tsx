@@ -60,7 +60,7 @@ export function Carousel() {
     };
   }, []);
 
-  const ZOOM_BURST_DURATION_MS = 950;
+  const ZOOM_BURST_DURATION_MS = 1100;
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
