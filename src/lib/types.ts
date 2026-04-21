@@ -38,13 +38,19 @@ export interface CarouselSettings {
   show_progress_bar: boolean;
 }
 
-export type TransitionType = "crossfade" | "slide" | "zoomFade" | "cardStack";
+export type TransitionType =
+  | "crossfade"
+  | "slide"
+  | "zoomFade"
+  | "cardStack"
+  | "zoomBurst";
 
 export const TRANSITION_LABELS: Record<TransitionType, string> = {
   crossfade: "Crossfade",
   slide: "Slide",
   zoomFade: "Zoom Fade",
   cardStack: "Card Stack",
+  zoomBurst: "Zoom Burst",
 };
 
 export const DEFAULT_SETTINGS: CarouselSettings = {

@@ -45,6 +45,35 @@ const zoomFade: TransitionConfig = {
   transition: { duration: 0.7, ease: "easeInOut" },
 };
 
+const zoomBurst: TransitionConfig = {
+  variants: {
+    enter: (d: number) => ({
+      scale: 0.25,
+      opacity: 0,
+      rotate: d > 0 ? -6 : 6,
+      filter: "blur(18px)",
+      zIndex: 2,
+    }),
+    center: {
+      scale: 1,
+      opacity: 1,
+      rotate: 0,
+      filter: "blur(0px)",
+      zIndex: 2,
+    },
+    exit: () => ({
+      scale: 2.4,
+      opacity: 0,
+      filter: "blur(24px)",
+      zIndex: 1,
+    }),
+  },
+  transition: {
+    duration: 0.95,
+    ease: [0.16, 1, 0.3, 1],
+  },
+};
+
 const cardStack: TransitionConfig = {
   variants: {
     enter: (d: number) => ({
@@ -71,6 +100,7 @@ const transitionMap: Record<TransitionType, TransitionConfig> = {
   slide,
   zoomFade,
   cardStack,
+  zoomBurst,
 };
 
 export function getTransitionConfig(

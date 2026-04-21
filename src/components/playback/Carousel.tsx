@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useEffect, useCallback, useMemo } from "react";
+import { useRef, useEffect, useCallback, useMemo, useState } from "react";
+import type { TransitionType } from "@/lib/types";
 import { useCarouselItems } from "@/hooks/useCarouselItems";
 import { useSettings } from "@/hooks/useSettings";
 import { useCarouselPlayback } from "@/hooks/useCarouselPlayback";
@@ -37,11 +38,39 @@ export function Carousel() {
     onVideoEnded,
   } = useCarouselPlayback(slides, settings);
 
+  const [transitionOverride, setTransitionOverride] =
+    useState<TransitionType | null>(null);
+  const overrideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const triggerOverride = useCallback(
+    (type: TransitionType, durationMs: number) => {
+      setTransitionOverride(type);
+      if (overrideTimeoutRef.current) clearTimeout(overrideTimeoutRef.current);
+      overrideTimeoutRef.current = setTimeout(
+        () => setTransitionOverride(null),
+        durationMs + 150
+      );
+    },
+    []
+  );
+
+  useEffect(() => {
+    return () => {
+      if (overrideTimeoutRef.current) clearTimeout(overrideTimeoutRef.current);
+    };
+  }, []);
+
+  const ZOOM_BURST_DURATION_MS = 950;
+
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       switch (e.key) {
-        case " ":
         case "Enter":
+          e.preventDefault();
+          triggerOverride("zoomBurst", ZOOM_BURST_DURATION_MS);
+          goToNext();
+          break;
+        case " ":
         case "ArrowRight":
           e.preventDefault();
           goToNext();
@@ -57,7 +86,7 @@ export function Carousel() {
           break;
       }
     },
-    [goToNext, goToPrev, toggleFullscreen]
+    [goToNext, goToPrev, toggleFullscreen, triggerOverride]
   );
 
   useEffect(() => {
@@ -87,8 +116,12 @@ export function Carousel() {
       {currentSlide && currentItem && (
         <TransitionWrapper
           itemKey={currentSlide.key}
-          transitionType={settings.transition_type}
-          transitionDurationMs={settings.transition_duration_ms}
+          transitionType={transitionOverride ?? settings.transition_type}
+          transitionDurationMs={
+            transitionOverride === "zoomBurst"
+              ? ZOOM_BURST_DURATION_MS
+              : settings.transition_duration_ms
+          }
           direction={direction}
         >
           <CarouselItemDisplay

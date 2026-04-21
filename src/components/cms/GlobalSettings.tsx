@@ -87,7 +87,9 @@ export function GlobalSettings({ settings, onUpdate }: GlobalSettingsProps) {
                     TransitionType,
                     string,
                   ][]
-                ).map(([value, label]) => (
+                )
+                  .filter(([value]) => value !== "zoomBurst")
+                  .map(([value, label]) => (
                   <SelectItem
                     key={value}
                     value={value}
