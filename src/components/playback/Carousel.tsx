@@ -73,18 +73,30 @@ export function Carousel() {
     };
   }, []);
 
-  const ZOOM_BURST_DURATION_MS = 1250;
+  const ZOOM_BURST_DURATION_MS = 950;
   const PULSE_DURATION_MS = 1050;
   const ADVANCE_DELAY_MS = 160;
-  const [pulseKey, setPulseKey] = useState(0);
+  // Lockout so spamming Enter doesn't stack pulses / queue multiple
+  // goToNext calls. Lasts for the longer of the pulse or the slide
+  // transition, so a new burst can only start once the previous has
+  // fully settled.
+  const BURST_LOCKOUT_MS = Math.max(PULSE_DURATION_MS, ZOOM_BURST_DURATION_MS);
+  const [bursting, setBursting] = useState(false);
+  const burstingRef = useRef(false);
 
   const triggerBurst = useCallback(() => {
-    setPulseKey((k) => k + 1);
+    if (burstingRef.current) return;
+    burstingRef.current = true;
+    setBursting(true);
     triggerOverride("zoomBurst", ZOOM_BURST_DURATION_MS + ADVANCE_DELAY_MS);
     setTimeout(() => {
       goToNext();
     }, ADVANCE_DELAY_MS);
-  }, [goToNext, triggerOverride]);
+    setTimeout(() => {
+      burstingRef.current = false;
+      setBursting(false);
+    }, BURST_LOCKOUT_MS);
+  }, [goToNext, triggerOverride, BURST_LOCKOUT_MS]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -164,8 +176,8 @@ export function Carousel() {
       />
 
       <AnimatePresence>
-        {pulseKey > 0 && (
-          <AppleGlowPulse key={pulseKey} durationMs={PULSE_DURATION_MS} />
+        {bursting && (
+          <AppleGlowPulse durationMs={PULSE_DURATION_MS} />
         )}
       </AnimatePresence>
     </div>

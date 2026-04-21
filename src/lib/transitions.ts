@@ -48,9 +48,9 @@ const zoomFade: TransitionConfig = {
 const zoomBurst: TransitionConfig = {
   variants: {
     enter: () => ({
-      scale: 1.2,
+      scale: 1.15,
       opacity: 0,
-      filter: "blur(6px)",
+      filter: "blur(8px)",
       zIndex: 3,
     }),
     center: {
@@ -59,15 +59,18 @@ const zoomBurst: TransitionConfig = {
       filter: "blur(0px)",
       zIndex: 3,
     },
+    // Exit stays at scale 1 so the outgoing frame never shrinks and
+    // exposes black background around itself. It just fades + blurs
+    // under the incoming slide.
     exit: () => ({
-      scale: 0.86,
+      scale: 1,
       opacity: 0,
-      filter: "blur(6px)",
+      filter: "blur(8px)",
       zIndex: 1,
     }),
   },
   transition: {
-    duration: 1.25,
+    duration: 0.95,
     ease: [0.22, 1, 0.36, 1],
   },
 };
