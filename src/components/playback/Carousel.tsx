@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useCallback, useMemo } from "react";
+import { useRef, useEffect, useCallback, useMemo, useState } from "react";
 import { useCarouselItems } from "@/hooks/useCarouselItems";
 import { useSettings } from "@/hooks/useSettings";
 import { useCarouselPlayback } from "@/hooks/useCarouselPlayback";
@@ -65,6 +65,30 @@ export function Carousel() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
 
+  const [cursorIdle, setCursorIdle] = useState(false);
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const CURSOR_IDLE_MS = 2000;
+    const schedule = () => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => setCursorIdle(true), CURSOR_IDLE_MS);
+    };
+    const onActivity = () => {
+      setCursorIdle(false);
+      schedule();
+    };
+    schedule();
+    window.addEventListener("mousemove", onActivity);
+    window.addEventListener("mousedown", onActivity);
+    window.addEventListener("touchstart", onActivity);
+    return () => {
+      if (timer) clearTimeout(timer);
+      window.removeEventListener("mousemove", onActivity);
+      window.removeEventListener("mousedown", onActivity);
+      window.removeEventListener("touchstart", onActivity);
+    };
+  }, []);
+
   const loading = itemsLoading || settingsLoading;
 
   if (loading) {
@@ -84,7 +108,9 @@ export function Carousel() {
     <div
       ref={containerRef}
       className={`relative h-screen w-screen overflow-hidden bg-black ${
-        allowClickAdvance ? "cursor-pointer" : "cursor-none"
+        cursorIdle || !allowClickAdvance
+          ? "cursor-none"
+          : "cursor-pointer"
       }`}
       onClick={allowClickAdvance ? goToNext : undefined}
     >
