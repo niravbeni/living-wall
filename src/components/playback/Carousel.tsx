@@ -1,6 +1,13 @@
 "use client";
 
-import { useRef, useEffect, useCallback, useMemo, useState } from "react";
+import {
+  useRef,
+  useEffect,
+  useCallback,
+  useMemo,
+  useState,
+  type CSSProperties,
+} from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import type { TransitionType } from "@/lib/types";
 import { useCarouselItems } from "@/hooks/useCarouselItems";
@@ -153,44 +160,34 @@ export function Carousel() {
 
       <AnimatePresence>
         {pulseKey > 0 && (
-          <SiriPulse key={pulseKey} durationMs={PULSE_DURATION_MS} />
+          <AppleGlowPulse key={pulseKey} durationMs={PULSE_DURATION_MS} />
         )}
       </AnimatePresence>
     </div>
   );
 }
 
-function SiriPulse({ durationMs }: { durationMs: number }) {
+function AppleGlowPulse({ durationMs }: { durationMs: number }) {
   const seconds = durationMs / 1000;
+
+  const gradient =
+    "conic-gradient(from 45deg, #D9FF00 0%, #151F27 20%, #D9FF00 40%, #151F27 60%, #D9FF00 80%, #151F27 95%, #D9FF00 100%)";
+
+  const ringMask: CSSProperties = {
+    WebkitMask:
+      "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+    WebkitMaskComposite: "xor",
+    mask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+    maskComposite: "exclude",
+  };
+
   return (
     <>
-      {/* Soft multi-color conic halo — Siri-like gentle edge wash */}
-      <motion.div
-        className="pointer-events-none absolute inset-0 z-50"
-        initial={{ opacity: 0, rotate: -8 }}
-        animate={{ opacity: [0, 0.9, 0.5, 0], rotate: 12 }}
-        exit={{ opacity: 0 }}
-        transition={{
-          duration: seconds * 1.2,
-          times: [0, 0.25, 0.6, 1],
-          ease: [0.22, 1, 0.36, 1],
-        }}
-        style={{
-          background:
-            "conic-gradient(from 140deg, #D9FF00 0deg, rgba(217,255,0,0.55) 60deg, #7B92A5 140deg, #151F27 220deg, #D9FF00 310deg, #D9FF00 360deg)",
-          WebkitMaskImage:
-            "radial-gradient(ellipse at center, transparent 52%, rgba(0,0,0,0.85) 82%, #000 100%)",
-          maskImage:
-            "radial-gradient(ellipse at center, transparent 52%, rgba(0,0,0,0.85) 82%, #000 100%)",
-          filter: "blur(38px) saturate(130%)",
-        }}
-      />
-
-      {/* Alchemy green emphasis — gentle inset glow */}
+      {/* Outermost soft bloom — wide alchemy haze with Deep tinge */}
       <motion.div
         className="pointer-events-none absolute inset-0 z-50"
         initial={{ opacity: 0 }}
-        animate={{ opacity: [0, 0.75, 0.4, 0] }}
+        animate={{ opacity: [0, 0.55, 0.3, 0] }}
         exit={{ opacity: 0 }}
         transition={{
           duration: seconds,
@@ -199,7 +196,63 @@ function SiriPulse({ durationMs }: { durationMs: number }) {
         }}
         style={{
           boxShadow:
-            "inset 0 0 120px 10px rgba(217,255,0,0.45), inset 0 0 320px 60px rgba(217,255,0,0.18), inset 0 0 600px 120px rgba(21,31,39,0.35)",
+            "inset 0 0 160px 40px rgba(217,255,0,0.32), inset 0 0 380px 90px rgba(21,31,39,0.28)",
+        }}
+      />
+
+      {/* Wide blurred border gradient — the bloom of the glow */}
+      <motion.div
+        className="pointer-events-none absolute inset-0 z-50"
+        initial={{ opacity: 0, scale: 0.995 }}
+        animate={{ opacity: [0, 1, 0.8, 0], scale: [0.995, 1, 1.005, 1.01] }}
+        exit={{ opacity: 0 }}
+        transition={{
+          duration: seconds,
+          times: [0, 0.22, 0.6, 1],
+          ease: [0.22, 1, 0.36, 1],
+        }}
+        style={{
+          padding: 36,
+          background: gradient,
+          filter: "blur(22px) saturate(140%)",
+          ...ringMask,
+        }}
+      />
+
+      {/* Mid blurred border gradient — fills out the glow body */}
+      <motion.div
+        className="pointer-events-none absolute inset-0 z-50"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: [0, 1, 0.75, 0] }}
+        exit={{ opacity: 0 }}
+        transition={{
+          duration: seconds,
+          times: [0, 0.2, 0.55, 1],
+          ease: "easeOut",
+        }}
+        style={{
+          padding: 14,
+          background: gradient,
+          filter: "blur(8px) saturate(130%)",
+          ...ringMask,
+        }}
+      />
+
+      {/* Sharp inner stroke — the crisp Apple-Intelligence line */}
+      <motion.div
+        className="pointer-events-none absolute inset-0 z-50"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: [0, 1, 0.9, 0] }}
+        exit={{ opacity: 0 }}
+        transition={{
+          duration: seconds,
+          times: [0, 0.18, 0.55, 1],
+          ease: "easeOut",
+        }}
+        style={{
+          padding: 3,
+          background: gradient,
+          ...ringMask,
         }}
       />
     </>
