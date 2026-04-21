@@ -47,24 +47,24 @@ const zoomFade: TransitionConfig = {
 
 const zoomBurst: TransitionConfig = {
   variants: {
-    enter: {
+    enter: () => ({
       scale: 0.2,
       opacity: 0,
       filter: "blur(16px)",
       zIndex: 2,
-    },
+    }),
     center: {
       scale: 1,
       opacity: 1,
       filter: "blur(0px)",
       zIndex: 2,
     },
-    exit: {
+    exit: () => ({
       scale: 2.6,
       opacity: 0,
       filter: "blur(20px)",
       zIndex: 1,
-    },
+    }),
   },
   transition: {
     type: "spring",
