@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
+import { Slider } from "@/components/ui/slider";
 import {
   GripVertical,
   Trash2,
@@ -355,22 +356,50 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
                   </div>
 
                   {item.type === "video" && (
-                    <div className="flex items-center justify-between">
-                      <Label
-                        htmlFor={`loop-${item.id}`}
-                        className="cursor-pointer"
-                      >
-                        Loop video
-                      </Label>
-                      <Switch
-                        id={`loop-${item.id}`}
-                        className="cursor-pointer"
-                        checked={item.video_loop}
-                        onCheckedChange={(checked) =>
-                          commit({ video_loop: checked })
-                        }
-                      />
-                    </div>
+                    <>
+                      <div className="flex items-center justify-between">
+                        <Label
+                          htmlFor={`loop-${item.id}`}
+                          className="cursor-pointer"
+                        >
+                          Loop video
+                        </Label>
+                        <Switch
+                          id={`loop-${item.id}`}
+                          className="cursor-pointer"
+                          checked={item.video_loop}
+                          onCheckedChange={(checked) =>
+                            commit({ video_loop: checked })
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Label>Playback speed</Label>
+                          <span className="text-xs text-muted-foreground">
+                            {item.video_speed}x
+                          </span>
+                        </div>
+                        <Slider
+                          className="cursor-pointer"
+                          value={[item.video_speed]}
+                          onValueChange={(v) =>
+                            commit({
+                              video_speed: Math.round((Array.isArray(v) ? v[0] : v) * 100) / 100,
+                            })
+                          }
+                          min={0.25}
+                          max={4}
+                          step={0.25}
+                        />
+                        <div className="flex justify-between text-xs text-muted-foreground">
+                          <span>0.25x</span>
+                          <span>1x</span>
+                          <span>2x</span>
+                          <span>4x</span>
+                        </div>
+                      </div>
+                    </>
                   )}
                 </>
               )}

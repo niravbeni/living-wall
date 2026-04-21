@@ -9,9 +9,14 @@ function normalizeItem(
   row: CarouselItem & { visible_in_carousel?: boolean | null }
 ): CarouselItem {
   const dDur = row.divider_duration_seconds;
+  const vSpeed = row.video_speed;
   return {
     ...row,
     visible_in_carousel: row.visible_in_carousel !== false,
+    video_speed:
+      typeof vSpeed === "number" && !Number.isNaN(vSpeed)
+        ? Math.max(0.25, Math.min(4, vSpeed))
+        : 2,
     divider_enabled: row.divider_enabled === true,
     divider_title: row.divider_title ?? "",
     divider_subtitle: row.divider_subtitle ?? "",

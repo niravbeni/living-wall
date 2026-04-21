@@ -7,6 +7,8 @@ export interface CarouselItem {
   thumbnail_url: string;
   duration_seconds: number;
   video_loop: boolean;
+  /** Playback rate: 0.25–4, default 2 */
+  video_speed: number;
   /** When false, item is kept in CMS but excluded from playback */
   visible_in_carousel: boolean;
   /** Full-screen intro before this item’s content (IDEO logo + copy on colored bg) */

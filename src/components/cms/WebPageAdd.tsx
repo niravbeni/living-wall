@@ -50,6 +50,7 @@ export function WebPageAdd({
         thumbnail_url: "",
         duration_seconds: defaultDuration,
         video_loop: false,
+        video_speed: 2,
         visible_in_carousel: true,
         ...DEFAULT_ITEM_DIVIDER_FIELDS,
         divider_title: label,

@@ -10,6 +10,7 @@ create table if not exists carousel_items (
   thumbnail_url text default '',
   duration_seconds integer default 5,
   video_loop boolean default false,
+  video_speed numeric default 2,
   visible_in_carousel boolean default true,
   divider_enabled boolean default true,
   divider_title text default '',

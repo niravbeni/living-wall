@@ -38,12 +38,13 @@ export function CarouselItemDisplay({
   useEffect(() => {
     if (!videoRef.current) return;
     if (isActive) {
+      videoRef.current.playbackRate = item.video_speed ?? 2;
       videoRef.current.currentTime = 0;
       videoRef.current.play().catch(() => {});
     } else {
       videoRef.current.pause();
     }
-  }, [isActive]);
+  }, [isActive, item.video_speed]);
 
   if (phase === "intro") {
     return (
