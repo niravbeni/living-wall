@@ -27,6 +27,8 @@ function normalizeItem(
         ? Math.max(1, Math.min(300, dDur))
         : 3,
     caption_enabled: row.caption_enabled !== false,
+    caption_title: row.caption_title ?? "",
+    caption_subtitle: row.caption_subtitle ?? "",
   };
 }
 

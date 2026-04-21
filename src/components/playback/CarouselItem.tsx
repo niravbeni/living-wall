@@ -114,8 +114,10 @@ export function CarouselItemDisplay({
     );
   }
 
-  const captionTitle = item.divider_title?.trim();
-  const captionSubtitle = item.divider_subtitle?.trim();
+  const captionTitle =
+    item.caption_title?.trim() || item.divider_title?.trim();
+  const captionSubtitle =
+    item.caption_subtitle?.trim() || item.divider_subtitle?.trim();
   const hasCaption =
     item.caption_enabled !== false &&
     Boolean(captionTitle || captionSubtitle);

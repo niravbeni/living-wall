@@ -526,11 +526,11 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
                       Caption overlay
                     </h4>
                     <p className="text-xs text-muted-foreground mb-3">
-                      A translucent card in the bottom-left corner showing
-                      the intro title and subtitle, fading out after a few
-                      seconds. Uses the same text as the intro.
+                      A translucent card in the bottom-left corner that
+                      fades out after a few seconds. Leave the fields
+                      blank to reuse the intro title / subtitle.
                     </p>
-                    <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center justify-between gap-4 mb-4">
                       <Label
                         htmlFor={`caption-on-${item.id}`}
                         className="cursor-pointer"
@@ -545,6 +545,36 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
                           commit({ caption_enabled: checked })
                         }
                       />
+                    </div>
+                    <div className="space-y-3">
+                      <div className="space-y-2">
+                        <Label htmlFor={`cap-title-${item.id}`}>
+                          Caption title
+                        </Label>
+                        <BufferedInput
+                          id={`cap-title-${item.id}`}
+                          value={item.caption_title}
+                          onCommit={(v) => commit({ caption_title: v })}
+                          placeholder={
+                            item.divider_title ||
+                            "Uses intro title when blank"
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor={`cap-sub-${item.id}`}>
+                          Caption subtitle
+                        </Label>
+                        <BufferedInput
+                          id={`cap-sub-${item.id}`}
+                          value={item.caption_subtitle}
+                          onCommit={(v) => commit({ caption_subtitle: v })}
+                          placeholder={
+                            item.divider_subtitle ||
+                            "Uses intro subtitle when blank"
+                          }
+                        />
+                      </div>
                     </div>
                   </div>
                 </>
