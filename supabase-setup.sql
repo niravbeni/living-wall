@@ -18,6 +18,7 @@ create table if not exists carousel_items (
   divider_body text default '',
   divider_background text default '#000000',
   divider_duration_seconds integer default 5,
+  caption_enabled boolean default true,
   sort_order integer default 0,
   created_at timestamptz default now()
 );

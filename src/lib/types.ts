@@ -19,6 +19,8 @@ export interface CarouselItem {
   /** CSS hex background, e.g. #000000 */
   divider_background: string;
   divider_duration_seconds: number;
+  /** When true, show a fading bottom-left caption (intro title + subtitle) on this item during playback */
+  caption_enabled: boolean;
   sort_order: number;
   created_at: string;
 }
@@ -61,6 +63,7 @@ export const DEFAULT_ITEM_DIVIDER_FIELDS = {
     "Consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
   divider_background: DEFAULT_DIVIDER_BACKGROUND,
   divider_duration_seconds: 3,
+  caption_enabled: true,
 } as const;
 
 export const ACCEPTED_IMAGE_TYPES = {

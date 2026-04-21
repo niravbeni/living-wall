@@ -116,7 +116,9 @@ export function CarouselItemDisplay({
 
   const captionTitle = item.divider_title?.trim();
   const captionSubtitle = item.divider_subtitle?.trim();
-  const hasCaption = Boolean(captionTitle || captionSubtitle);
+  const hasCaption =
+    item.caption_enabled !== false &&
+    Boolean(captionTitle || captionSubtitle);
 
   if (item.type === "video") {
     return (

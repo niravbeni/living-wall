@@ -26,6 +26,7 @@ function normalizeItem(
       typeof dDur === "number" && !Number.isNaN(dDur)
         ? Math.max(1, Math.min(300, dDur))
         : 3,
+    caption_enabled: row.caption_enabled !== false,
   };
 }
 

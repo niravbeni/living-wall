@@ -519,6 +519,38 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
               )}
 
               {(item.type === "image" || item.type === "video") && (
+                <>
+                  <Separator />
+                  <div>
+                    <h4 className="text-sm font-medium mb-1">
+                      Caption overlay
+                    </h4>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      A translucent card in the bottom-left corner showing
+                      the intro title and subtitle, fading out after a few
+                      seconds. Uses the same text as the intro.
+                    </p>
+                    <div className="flex items-center justify-between gap-4">
+                      <Label
+                        htmlFor={`caption-on-${item.id}`}
+                        className="cursor-pointer"
+                      >
+                        Show caption
+                      </Label>
+                      <Switch
+                        id={`caption-on-${item.id}`}
+                        className="cursor-pointer"
+                        checked={item.caption_enabled}
+                        onCheckedChange={(checked) =>
+                          commit({ caption_enabled: checked })
+                        }
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {(item.type === "image" || item.type === "video") && (
                 <Button
                   variant="outline"
                   size="sm"
