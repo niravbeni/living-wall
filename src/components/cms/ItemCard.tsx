@@ -5,6 +5,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { CarouselItem } from "@/lib/types";
 import { normalizeWebUrl } from "@/lib/url";
+import { proxyMediaUrl } from "@/lib/supabase";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -132,7 +133,7 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
     if (!item.media_url) return;
     setDownloading(true);
     try {
-      const res = await fetch(item.media_url);
+      const res = await fetch(proxyMediaUrl(item.media_url));
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -187,7 +188,7 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
             </div>
           ) : item.type === "video" ? (
             <video
-              src={item.media_url}
+              src={proxyMediaUrl(item.media_url)}
               className="h-full w-full object-cover"
               muted
               preload="metadata"
@@ -195,7 +196,7 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
           ) : (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={item.media_url}
+              src={proxyMediaUrl(item.media_url)}
               alt={item.title}
               className="h-full w-full object-cover"
             />
