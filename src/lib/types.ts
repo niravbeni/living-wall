@@ -7,7 +7,7 @@ export interface CarouselItem {
   thumbnail_url: string;
   duration_seconds: number;
   video_loop: boolean;
-  /** Playback rate: 0.25–4, default 2 */
+  /** Playback rate: 0.25–2, default 1.5 */
   video_speed: number;
   /** When false, item is kept in CMS but excluded from playback */
   visible_in_carousel: boolean;

@@ -15,7 +15,7 @@ function normalizeItem(
     visible_in_carousel: row.visible_in_carousel !== false,
     video_speed:
       typeof vSpeed === "number" && !Number.isNaN(vSpeed)
-        ? Math.max(0.25, Math.min(4, vSpeed))
+        ? Math.max(0.25, Math.min(2, vSpeed))
         : 1.5,
     divider_enabled: row.divider_enabled === true,
     divider_title: row.divider_title ?? "",

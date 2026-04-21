@@ -389,15 +389,17 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
                             })
                           }
                           min={0.25}
-                          max={4}
+                          max={2}
                           step={0.25}
                         />
                         <div className="relative h-4 text-xs text-muted-foreground">
                           <span className="absolute left-0">0.25x</span>
-                          <span className="absolute" style={{ left: "20%" }}>1x</span>
-                          <span className="absolute" style={{ left: "33.3%" }}>1.5x</span>
-                          <span className="absolute" style={{ left: "46.7%" }}>2x</span>
-                          <span className="absolute right-0">4x</span>
+                          <span className="absolute" style={{ left: `${((0.75 - 0.25) / 1.75) * 100}%`, transform: "translateX(-50%)" }}>0.75x</span>
+                          <span className="absolute" style={{ left: `${((1 - 0.25) / 1.75) * 100}%`, transform: "translateX(-50%)" }}>1x</span>
+                          <span className="absolute" style={{ left: `${((1.25 - 0.25) / 1.75) * 100}%`, transform: "translateX(-50%)" }}>1.25x</span>
+                          <span className="absolute" style={{ left: `${((1.5 - 0.25) / 1.75) * 100}%`, transform: "translateX(-50%)" }}>1.5x</span>
+                          <span className="absolute" style={{ left: `${((1.75 - 0.25) / 1.75) * 100}%`, transform: "translateX(-50%)" }}>1.75x</span>
+                          <span className="absolute right-0">2x</span>
                         </div>
                       </div>
                     </>
