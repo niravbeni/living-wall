@@ -392,11 +392,11 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
                           max={4}
                           step={0.25}
                         />
-                        <div className="flex justify-between text-xs text-muted-foreground">
-                          <span>0.25x</span>
-                          <span>1x</span>
-                          <span>2x</span>
-                          <span>4x</span>
+                        <div className="relative h-4 text-xs text-muted-foreground">
+                          <span className="absolute left-0">0.25x</span>
+                          <span className="absolute" style={{ left: "20%" }}>1x</span>
+                          <span className="absolute" style={{ left: "46.7%" }}>2x</span>
+                          <span className="absolute right-0">4x</span>
                         </div>
                       </div>
                     </>
