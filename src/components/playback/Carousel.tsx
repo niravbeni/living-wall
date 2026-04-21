@@ -62,7 +62,7 @@ export function Carousel() {
   }, []);
 
   const ZOOM_BURST_DURATION_MS = 1250;
-  const PULSE_DURATION_MS = 800;
+  const PULSE_DURATION_MS = 1050;
   const ADVANCE_DELAY_MS = 160;
   const [pulseKey, setPulseKey] = useState(0);
 
@@ -153,43 +153,55 @@ export function Carousel() {
 
       <AnimatePresence>
         {pulseKey > 0 && (
-          <motion.div
-            key={pulseKey}
-            className="pointer-events-none absolute inset-0 z-50"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: [0, 1, 0.6, 0] }}
-            exit={{ opacity: 0 }}
-            transition={{
-              duration: PULSE_DURATION_MS / 1000,
-              times: [0, 0.18, 0.55, 1],
-              ease: "easeOut",
-            }}
-            style={{
-              boxShadow:
-                "inset 0 0 140px 20px #b6ff3d, inset 0 0 320px 80px rgba(182,255,61,0.45)",
-            }}
-          >
-            <motion.div
-              className="absolute inset-0"
-              initial={{ opacity: 0, scale: 1.02 }}
-              animate={{
-                opacity: [0, 0.9, 0],
-                scale: [1.02, 1, 1.01],
-              }}
-              transition={{
-                duration: PULSE_DURATION_MS / 1000,
-                times: [0, 0.25, 1],
-                ease: "easeOut",
-              }}
-              style={{
-                border: "3px solid #b6ff3d",
-                boxShadow:
-                  "0 0 24px #b6ff3d, inset 0 0 24px rgba(182,255,61,0.6)",
-              }}
-            />
-          </motion.div>
+          <SiriPulse key={pulseKey} durationMs={PULSE_DURATION_MS} />
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+function SiriPulse({ durationMs }: { durationMs: number }) {
+  const seconds = durationMs / 1000;
+  return (
+    <>
+      {/* Soft multi-color conic halo — Siri-like gentle edge wash */}
+      <motion.div
+        className="pointer-events-none absolute inset-0 z-50"
+        initial={{ opacity: 0, rotate: -8 }}
+        animate={{ opacity: [0, 0.9, 0.5, 0], rotate: 12 }}
+        exit={{ opacity: 0 }}
+        transition={{
+          duration: seconds * 1.2,
+          times: [0, 0.25, 0.6, 1],
+          ease: [0.22, 1, 0.36, 1],
+        }}
+        style={{
+          background:
+            "conic-gradient(from 140deg, #D9FF00 0deg, rgba(217,255,0,0.55) 60deg, #7B92A5 140deg, #151F27 220deg, #D9FF00 310deg, #D9FF00 360deg)",
+          WebkitMaskImage:
+            "radial-gradient(ellipse at center, transparent 52%, rgba(0,0,0,0.85) 82%, #000 100%)",
+          maskImage:
+            "radial-gradient(ellipse at center, transparent 52%, rgba(0,0,0,0.85) 82%, #000 100%)",
+          filter: "blur(38px) saturate(130%)",
+        }}
+      />
+
+      {/* Alchemy green emphasis — gentle inset glow */}
+      <motion.div
+        className="pointer-events-none absolute inset-0 z-50"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: [0, 0.75, 0.4, 0] }}
+        exit={{ opacity: 0 }}
+        transition={{
+          duration: seconds,
+          times: [0, 0.22, 0.6, 1],
+          ease: "easeOut",
+        }}
+        style={{
+          boxShadow:
+            "inset 0 0 120px 10px rgba(217,255,0,0.45), inset 0 0 320px 60px rgba(217,255,0,0.18), inset 0 0 600px 120px rgba(21,31,39,0.35)",
+        }}
+      />
+    </>
   );
 }
