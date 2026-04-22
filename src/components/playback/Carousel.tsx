@@ -20,7 +20,13 @@ import { useSettings } from "@/hooks/useSettings";
 import { useCarouselPlayback } from "@/hooks/useCarouselPlayback";
 import { useFullscreen } from "@/hooks/useFullscreen";
 import { expandPlaybackSlides } from "@/lib/playback-slides";
-import { CarouselItemDisplay } from "./CarouselItem";
+import {
+  CarouselItemDisplay,
+  CaptionOverlay,
+  getCaptionTitle,
+  getCaptionSubtitle,
+  itemHasCaption,
+} from "./CarouselItem";
 import { TransitionWrapper } from "./TransitionWrapper";
 import { ProgressBar } from "./ProgressBar";
 
@@ -129,6 +135,36 @@ export function Carousel() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
 
+  // Caption overlay visibility: slides up from the bottom on content
+  // phase, auto-hides after a few seconds, and slides back down when
+  // the item changes (AnimatePresence mode="wait" makes the exit and
+  // enter sequential).
+  const CAPTION_VISIBLE_MS = 8000;
+  const [captionShown, setCaptionShown] = useState(false);
+  const captionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (captionTimerRef.current) clearTimeout(captionTimerRef.current);
+
+    if (
+      currentSlide?.phase !== "content" ||
+      !currentItem ||
+      !itemHasCaption(currentItem)
+    ) {
+      setCaptionShown(false);
+      return;
+    }
+
+    setCaptionShown(true);
+    captionTimerRef.current = setTimeout(() => {
+      setCaptionShown(false);
+    }, CAPTION_VISIBLE_MS);
+
+    return () => {
+      if (captionTimerRef.current) clearTimeout(captionTimerRef.current);
+    };
+  }, [currentItem, currentSlide?.phase]);
+
   const loading = itemsLoading || settingsLoading;
 
   if (loading) {
@@ -174,6 +210,18 @@ export function Carousel() {
           settings.show_progress_bar && !paused && !isWebContent
         }
       />
+
+      {/* Sequential slide-in/out caption overlay. mode="wait" means the
+          old card fully slides down before the next one slides up. */}
+      <AnimatePresence mode="wait">
+        {captionShown && currentItem && (
+          <CaptionOverlay
+            key={currentItem.id}
+            title={getCaptionTitle(currentItem)}
+            subtitle={getCaptionSubtitle(currentItem)}
+          />
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {bursting && (

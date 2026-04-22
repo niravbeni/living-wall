@@ -1,9 +1,24 @@
 "use client";
 
-import { useRef, useEffect, useMemo, useState } from "react";
+import { useRef, useEffect, useMemo } from "react";
+import { motion } from "framer-motion";
 import type { CarouselItem as CarouselItemType } from "@/lib/types";
 import type { PlaybackSlide } from "@/lib/playback-slides";
 import { proxyMediaUrl } from "@/lib/supabase";
+
+/** Helpers — shared with Carousel which now renders the caption itself. */
+export function getCaptionTitle(item: CarouselItemType): string | undefined {
+  return item.caption_title?.trim() || item.divider_title?.trim();
+}
+export function getCaptionSubtitle(item: CarouselItemType): string | undefined {
+  return item.caption_subtitle?.trim() || item.divider_subtitle?.trim();
+}
+export function itemHasCaption(item: CarouselItemType): boolean {
+  return (
+    item.caption_enabled !== false &&
+    Boolean(getCaptionTitle(item) || getCaptionSubtitle(item))
+  );
+}
 
 function textOnBackground(hex: string): string {
   const raw = hex.replace("#", "").trim();
@@ -34,19 +49,6 @@ export function CarouselItemDisplay({
   const bg = item.divider_background || "#000000";
   const fg = useMemo(() => textOnBackground(bg), [bg]);
   const mediaSrc = useMemo(() => proxyMediaUrl(item.media_url), [item.media_url]);
-
-  const [captionVisible, setCaptionVisible] = useState(true);
-  useEffect(() => {
-    if (phase !== "content") return;
-    setCaptionVisible(true);
-    const CAPTION_VISIBLE_MS = 8000;
-    const CAPTION_FADE_MS = 600;
-    const t = setTimeout(
-      () => setCaptionVisible(false),
-      CAPTION_VISIBLE_MS - CAPTION_FADE_MS
-    );
-    return () => clearTimeout(t);
-  }, [item.id, phase]);
 
   useEffect(() => {
     if (!videoRef.current) return;
@@ -100,91 +102,69 @@ export function CarouselItemDisplay({
     );
   }
 
-  const captionTitle =
-    item.caption_title?.trim() || item.divider_title?.trim();
-  const captionSubtitle =
-    item.caption_subtitle?.trim() || item.divider_subtitle?.trim();
-  const hasCaption =
-    item.caption_enabled !== false &&
-    Boolean(captionTitle || captionSubtitle);
-
   if (item.type === "web") {
     return (
-      <>
-        <iframe
-          src={isActive ? mediaSrc : "about:blank"}
-          title={item.title || "Web page"}
-          className="absolute inset-0 h-full w-full border-0 bg-white"
-          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads"
-          referrerPolicy="no-referrer-when-downgrade"
-          loading="eager"
-        />
-        {hasCaption && (
-          <CaptionOverlay
-            title={captionTitle}
-            subtitle={captionSubtitle}
-            visible={captionVisible}
-          />
-        )}
-      </>
+      <iframe
+        src={isActive ? mediaSrc : "about:blank"}
+        title={item.title || "Web page"}
+        className="absolute inset-0 h-full w-full border-0 bg-white"
+        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads"
+        referrerPolicy="no-referrer-when-downgrade"
+        loading="eager"
+      />
     );
   }
 
   if (item.type === "video") {
     return (
-      <>
-        <video
-          ref={videoRef}
-          src={mediaSrc}
-          className="absolute inset-0 h-full w-full object-cover"
-          muted
-          playsInline
-          loop={item.video_loop}
-          onEnded={onVideoEnded}
-        />
-        {hasCaption && (
-          <CaptionOverlay
-            title={captionTitle}
-            subtitle={captionSubtitle}
-            visible={captionVisible}
-          />
-        )}
-      </>
+      <video
+        ref={videoRef}
+        src={mediaSrc}
+        className="absolute inset-0 h-full w-full object-cover"
+        muted
+        playsInline
+        loop={item.video_loop}
+        onEnded={onVideoEnded}
+      />
     );
   }
 
   return (
-    <>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={mediaSrc}
-        alt={item.title}
-        className="absolute inset-0 h-full w-full object-cover"
-        draggable={false}
-      />
-      {hasCaption && (
-        <CaptionOverlay
-          title={captionTitle}
-          subtitle={captionSubtitle}
-          visible={captionVisible}
-        />
-      )}
-    </>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={mediaSrc}
+      alt={item.title}
+      className="absolute inset-0 h-full w-full object-cover"
+      draggable={false}
+    />
   );
 }
 
-interface CaptionOverlayProps {
+/**
+ * CaptionOverlay — rendered at the Carousel level (not inside the media
+ * transition wrapper) so it gets an independent, sequential slide-up /
+ * slide-down animation via AnimatePresence mode="wait".
+ */
+export interface CaptionOverlayProps {
   title?: string;
   subtitle?: string;
-  visible: boolean;
 }
 
-function CaptionOverlay({ title, subtitle, visible }: CaptionOverlayProps) {
+export function CaptionOverlay({ title, subtitle }: CaptionOverlayProps) {
   return (
-    <div
-      className="pointer-events-none absolute bottom-6 left-6 sm:bottom-10 sm:left-10 max-w-[55%] rounded-3xl px-7 py-6 sm:px-10 sm:py-8 overflow-hidden transition-opacity duration-[600ms] ease-out"
+    <motion.div
+      className="pointer-events-none absolute bottom-6 left-6 sm:bottom-10 sm:left-10 max-w-[55%] rounded-3xl px-7 py-6 sm:px-10 sm:py-8 overflow-hidden z-40"
+      initial={{ y: "130%", opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      exit={{ y: "130%", opacity: 0 }}
+      transition={{
+        type: "spring",
+        stiffness: 130,
+        damping: 22,
+        mass: 0.8,
+        opacity: { duration: 0.35, ease: "easeOut" },
+      }}
       style={{
-        opacity: visible ? 1 : 0,
         maxHeight: "48vh",
         color: "#fafafa",
         fontFamily: "'FH Oscar', sans-serif",
@@ -207,6 +187,6 @@ function CaptionOverlay({ title, subtitle, visible }: CaptionOverlayProps) {
           {subtitle}
         </p>
       ) : null}
-    </div>
+    </motion.div>
   );
 }
