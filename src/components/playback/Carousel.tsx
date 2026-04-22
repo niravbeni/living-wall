@@ -29,6 +29,10 @@ import {
 } from "./CarouselItem";
 import { TransitionWrapper } from "./TransitionWrapper";
 import { ProgressBar } from "./ProgressBar";
+import {
+  RippleOverlay,
+  type RippleOverlayHandle,
+} from "./RippleOverlay";
 
 export function Carousel() {
   const { items, loading: itemsLoading } = useCarouselItems();
@@ -90,10 +94,28 @@ export function Carousel() {
   const [bursting, setBursting] = useState(false);
   const burstingRef = useRef(false);
 
+  // WebGL ripple overlay. On Enter, we snapshot the currently visible
+  // <img>/<video> element, pass it to the overlay which renders a
+  // one-shot radial ripple from the center outward (kept well inside
+  // the viewport so it never competes with the border glow).
+  const rippleRef = useRef<RippleOverlayHandle | null>(null);
+  const mediaHostRef = useRef<HTMLDivElement | null>(null);
+
+  const triggerRipple = useCallback(() => {
+    const host = mediaHostRef.current;
+    if (!host) return;
+    const el = host.querySelector(
+      "img, video"
+    ) as HTMLImageElement | HTMLVideoElement | null;
+    if (!el) return;
+    rippleRef.current?.trigger(el);
+  }, []);
+
   const triggerBurst = useCallback(() => {
     if (burstingRef.current) return;
     burstingRef.current = true;
     setBursting(true);
+    triggerRipple();
     triggerOverride("zoomBurst", ZOOM_BURST_DURATION_MS + ADVANCE_DELAY_MS);
     setTimeout(() => {
       goToNext();
@@ -102,7 +124,7 @@ export function Carousel() {
       burstingRef.current = false;
       setBursting(false);
     }, BURST_LOCKOUT_MS);
-  }, [goToNext, triggerOverride, BURST_LOCKOUT_MS]);
+  }, [goToNext, triggerOverride, triggerRipple, BURST_LOCKOUT_MS]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -184,25 +206,29 @@ export function Carousel() {
       className="relative h-screen w-screen overflow-hidden bg-black cursor-none"
       onClick={goToNext}
     >
-      {currentSlide && currentItem && (
-        <TransitionWrapper
-          itemKey={currentSlide.key}
-          transitionType={transitionOverride ?? settings.transition_type}
-          transitionDurationMs={
-            transitionOverride === "zoomBurst"
-              ? ZOOM_BURST_DURATION_MS
-              : settings.transition_duration_ms
-          }
-          direction={direction}
-        >
-          <CarouselItemDisplay
-            item={currentItem}
-            phase={currentSlide.phase}
-            isActive={true}
-            onVideoEnded={onVideoEnded}
-          />
-        </TransitionWrapper>
-      )}
+      <div ref={mediaHostRef} className="absolute inset-0">
+        {currentSlide && currentItem && (
+          <TransitionWrapper
+            itemKey={currentSlide.key}
+            transitionType={transitionOverride ?? settings.transition_type}
+            transitionDurationMs={
+              transitionOverride === "zoomBurst"
+                ? ZOOM_BURST_DURATION_MS
+                : settings.transition_duration_ms
+            }
+            direction={direction}
+          >
+            <CarouselItemDisplay
+              item={currentItem}
+              phase={currentSlide.phase}
+              isActive={true}
+              onVideoEnded={onVideoEnded}
+            />
+          </TransitionWrapper>
+        )}
+      </div>
+
+      <RippleOverlay ref={rippleRef} />
 
       <ProgressBar
         progress={progress}
