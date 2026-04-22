@@ -39,7 +39,7 @@ export function CarouselItemDisplay({
   useEffect(() => {
     if (phase !== "content") return;
     setCaptionVisible(true);
-    const CAPTION_VISIBLE_MS = 5000;
+    const CAPTION_VISIBLE_MS = 8000;
     const CAPTION_FADE_MS = 600;
     const t = setTimeout(
       () => setCaptionVisible(false),
@@ -182,9 +182,10 @@ interface CaptionOverlayProps {
 function CaptionOverlay({ title, subtitle, visible }: CaptionOverlayProps) {
   return (
     <div
-      className="pointer-events-none absolute bottom-6 left-6 sm:bottom-10 sm:left-10 max-w-[70%] rounded-2xl px-5 py-4 sm:px-7 sm:py-5 transition-opacity duration-[600ms] ease-out"
+      className="pointer-events-none absolute bottom-6 left-6 sm:bottom-10 sm:left-10 max-w-[55%] rounded-3xl px-7 py-6 sm:px-10 sm:py-8 overflow-hidden transition-opacity duration-[600ms] ease-out"
       style={{
         opacity: visible ? 1 : 0,
+        maxHeight: "48vh",
         color: "#fafafa",
         fontFamily: "'FH Oscar', sans-serif",
         background:
@@ -197,12 +198,12 @@ function CaptionOverlay({ title, subtitle, visible }: CaptionOverlayProps) {
       }}
     >
       {title ? (
-        <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold leading-tight">
+        <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold leading-tight">
           {title}
         </h2>
       ) : null}
       {subtitle ? (
-        <p className="mt-1 sm:mt-2 text-base sm:text-lg md:text-xl font-light opacity-90 leading-snug">
+        <p className="mt-3 sm:mt-4 text-lg sm:text-xl md:text-2xl font-light opacity-90 leading-relaxed whitespace-pre-line">
           {subtitle}
         </p>
       ) : null}
