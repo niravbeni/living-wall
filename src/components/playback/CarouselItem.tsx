@@ -151,21 +151,25 @@ export interface CaptionOverlayProps {
 }
 
 export function CaptionOverlay({ title, subtitle }: CaptionOverlayProps) {
+  // Travel far enough that the card + its drop shadow are completely
+  // below the viewport before we even touch opacity. Using a calc()
+  // string so it works regardless of card height: 100% pushes the top
+  // of the card to the bottom of its own box, then +120px clears the
+  // bottom-* offset and the box shadow.
+  const OFFSCREEN_Y = "calc(100% + 120px)";
+
   return (
     <motion.div
-      className="pointer-events-none absolute bottom-6 left-6 sm:bottom-10 sm:left-10 max-w-[55%] rounded-3xl px-7 py-6 sm:px-10 sm:py-8 overflow-hidden z-40"
-      initial={{ y: "130%", opacity: 0 }}
+      className="pointer-events-none absolute bottom-6 left-6 sm:bottom-10 sm:left-10 w-[33vw] min-w-[280px] rounded-3xl px-7 py-6 sm:px-10 sm:py-8 overflow-hidden z-40"
+      initial={{ y: OFFSCREEN_Y, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      exit={{ y: "130%", opacity: 0 }}
+      exit={{ y: OFFSCREEN_Y, opacity: 0 }}
       transition={{
-        type: "spring",
-        stiffness: 130,
-        damping: 22,
-        mass: 0.8,
+        y: { type: "spring", stiffness: 140, damping: 24, mass: 0.9 },
         opacity: { duration: 0.35, ease: "easeOut" },
       }}
       style={{
-        maxHeight: "48vh",
+        maxHeight: "72vh",
         color: "#fafafa",
         fontFamily: "'FH Oscar', sans-serif",
         background:
