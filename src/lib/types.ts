@@ -25,9 +25,17 @@ export interface CarouselItem {
   caption_title: string;
   /** Caption subtitle. Falls back to divider_subtitle when empty. */
   caption_subtitle: string;
+  /**
+   * Visual style of the caption card. "light" is the default frosted
+   * glass look; "dark" uses a near-black translucent card for legibility
+   * on bright/white content.
+   */
+  caption_theme: CaptionTheme;
   sort_order: number;
   created_at: string;
 }
+
+export type CaptionTheme = "light" | "dark";
 
 export interface CarouselSettings {
   id: number;
@@ -76,6 +84,7 @@ export const DEFAULT_ITEM_DIVIDER_FIELDS = {
   caption_enabled: true,
   caption_title: "",
   caption_subtitle: "",
+  caption_theme: "light" as CaptionTheme,
 } as const;
 
 export const ACCEPTED_IMAGE_TYPES = {

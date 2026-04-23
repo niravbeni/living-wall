@@ -83,6 +83,36 @@ export function Carousel() {
     };
   }, []);
 
+  // Navigation "click" sound effect. Preloaded once and restarted on
+  // every press so rapid taps each hear the full sound from the top.
+  // Browsers require a user interaction before audio can play —
+  // key presses and clicks qualify, so playback is silently retried
+  // via a rejected promise.catch.
+  const clickSoundRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    const audio = new Audio("/sound.mp3");
+    audio.preload = "auto";
+    audio.volume = 0.7;
+    clickSoundRef.current = audio;
+    return () => {
+      audio.pause();
+      clickSoundRef.current = null;
+    };
+  }, []);
+
+  const playClickSound = useCallback(() => {
+    const a = clickSoundRef.current;
+    if (!a) return;
+    try {
+      a.currentTime = 0;
+      const p = a.play();
+      if (p && typeof p.catch === "function") p.catch(() => {});
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
   const ZOOM_BURST_DURATION_MS = 950;
   const PULSE_DURATION_MS = 1050;
   const ADVANCE_DELAY_MS = 160;
@@ -131,15 +161,18 @@ export function Carousel() {
       switch (e.key) {
         case "Enter":
           e.preventDefault();
+          playClickSound();
           triggerBurst();
           break;
         case " ":
         case "ArrowRight":
           e.preventDefault();
+          playClickSound();
           goToNext();
           break;
         case "ArrowLeft":
           e.preventDefault();
+          playClickSound();
           goToPrev();
           break;
         case "f":
@@ -149,7 +182,7 @@ export function Carousel() {
           break;
       }
     },
-    [goToNext, goToPrev, toggleFullscreen, triggerBurst]
+    [goToNext, goToPrev, toggleFullscreen, triggerBurst, playClickSound]
   );
 
   useEffect(() => {
@@ -204,7 +237,10 @@ export function Carousel() {
     <div
       ref={containerRef}
       className="relative h-screen w-screen overflow-hidden bg-black cursor-none"
-      onClick={goToNext}
+      onClick={() => {
+        playClickSound();
+        goToNext();
+      }}
     >
       <div ref={mediaHostRef} className="absolute inset-0">
         {currentSlide && currentItem && (
@@ -245,6 +281,7 @@ export function Carousel() {
             key={currentItem.id}
             title={getCaptionTitle(currentItem)}
             subtitle={getCaptionSubtitle(currentItem)}
+            theme={currentItem.caption_theme}
           />
         )}
       </AnimatePresence>

@@ -29,6 +29,7 @@ function normalizeItem(
     caption_enabled: row.caption_enabled !== false,
     caption_title: row.caption_title ?? "",
     caption_subtitle: row.caption_subtitle ?? "",
+    caption_theme: row.caption_theme === "dark" ? "dark" : "light",
   };
 }
 

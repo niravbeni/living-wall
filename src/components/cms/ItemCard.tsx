@@ -546,6 +546,30 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
                         }
                       />
                     </div>
+                    <div className="flex items-center justify-between gap-4 mb-4">
+                      <div className="flex flex-col">
+                        <Label
+                          htmlFor={`caption-theme-${item.id}`}
+                          className="cursor-pointer"
+                        >
+                          Dark card
+                        </Label>
+                        <span className="text-xs text-muted-foreground">
+                          Use a darker caption card for light or white
+                          content.
+                        </span>
+                      </div>
+                      <Switch
+                        id={`caption-theme-${item.id}`}
+                        className="cursor-pointer"
+                        checked={item.caption_theme === "dark"}
+                        onCheckedChange={(checked) =>
+                          commit({
+                            caption_theme: checked ? "dark" : "light",
+                          })
+                        }
+                      />
+                    </div>
                     <div className="space-y-3">
                       <div className="space-y-2">
                         <Label htmlFor={`cap-title-${item.id}`}>

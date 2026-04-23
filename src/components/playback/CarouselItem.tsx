@@ -2,7 +2,10 @@
 
 import { useRef, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
-import type { CarouselItem as CarouselItemType } from "@/lib/types";
+import type {
+  CarouselItem as CarouselItemType,
+  CaptionTheme,
+} from "@/lib/types";
 import type { PlaybackSlide } from "@/lib/playback-slides";
 import { proxyMediaUrl } from "@/lib/supabase";
 
@@ -148,15 +151,48 @@ export function CarouselItemDisplay({
 export interface CaptionOverlayProps {
   title?: string;
   subtitle?: string;
+  theme?: CaptionTheme;
 }
 
-export function CaptionOverlay({ title, subtitle }: CaptionOverlayProps) {
+const CAPTION_THEME_STYLES: Record<
+  CaptionTheme,
+  {
+    background: string;
+    border: string;
+    boxShadow: string;
+  }
+> = {
+  light: {
+    background:
+      "linear-gradient(135deg, rgba(20,20,20,0.32) 0%, rgba(30,30,30,0.22) 60%, rgba(60,60,60,0.12) 100%)",
+    border: "1px solid rgba(255,255,255,0.18)",
+    boxShadow:
+      "0 8px 32px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.18)",
+  },
+  dark: {
+    // Near-black translucent card with a tighter gradient — reads
+    // cleanly over bright / white content where the light variant
+    // disappears.
+    background:
+      "linear-gradient(135deg, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.68) 60%, rgba(20,20,20,0.58) 100%)",
+    border: "1px solid rgba(255,255,255,0.08)",
+    boxShadow:
+      "0 12px 40px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.06)",
+  },
+};
+
+export function CaptionOverlay({
+  title,
+  subtitle,
+  theme = "light",
+}: CaptionOverlayProps) {
   // Travel far enough that the card + its drop shadow are completely
   // below the viewport before we even touch opacity. Using a calc()
   // string so it works regardless of card height: 100% pushes the top
   // of the card to the bottom of its own box, then +120px clears the
   // bottom-* offset and the box shadow.
   const OFFSCREEN_Y = "calc(100% + 120px)";
+  const themeStyles = CAPTION_THEME_STYLES[theme] ?? CAPTION_THEME_STYLES.light;
 
   return (
     <motion.div
@@ -172,13 +208,11 @@ export function CaptionOverlay({ title, subtitle }: CaptionOverlayProps) {
         maxHeight: "72vh",
         color: "#fafafa",
         fontFamily: "'FH Oscar', sans-serif",
-        background:
-          "linear-gradient(135deg, rgba(20,20,20,0.32) 0%, rgba(30,30,30,0.22) 60%, rgba(60,60,60,0.12) 100%)",
+        background: themeStyles.background,
         backdropFilter: "blur(22px) saturate(160%)",
         WebkitBackdropFilter: "blur(22px) saturate(160%)",
-        border: "1px solid rgba(255,255,255,0.18)",
-        boxShadow:
-          "0 8px 32px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.18)",
+        border: themeStyles.border,
+        boxShadow: themeStyles.boxShadow,
       }}
     >
       {title ? (
