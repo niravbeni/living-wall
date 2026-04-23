@@ -154,6 +154,10 @@ export interface CaptionOverlayProps {
   theme?: CaptionTheme;
 }
 
+// Tinted liquid-glass cards per Figma (471:1885 light / 471:1889 dark).
+// Black text sits on a translucent white (light) or IDEO Alchemy lime
+// (#D9FF00, dark) wash, with a `backdropFilter` blur applied at the
+// call site to preserve the glassy feel over whatever media is behind.
 const CAPTION_THEME_STYLES: Record<
   CaptionTheme,
   {
@@ -164,20 +168,17 @@ const CAPTION_THEME_STYLES: Record<
 > = {
   light: {
     background:
-      "linear-gradient(135deg, rgba(20,20,20,0.32) 0%, rgba(30,30,30,0.22) 60%, rgba(60,60,60,0.12) 100%)",
-    border: "1px solid rgba(255,255,255,0.18)",
+      "linear-gradient(135deg, rgba(255,255,255,0.46) 0%, rgba(255,255,255,0.34) 100%)",
+    border: "1px solid rgba(255,255,255,0.55)",
     boxShadow:
-      "0 8px 32px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.18)",
+      "0 10px 32px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.65)",
   },
   dark: {
-    // Near-black translucent card with a tighter gradient — reads
-    // cleanly over bright / white content where the light variant
-    // disappears.
     background:
-      "linear-gradient(135deg, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.68) 60%, rgba(20,20,20,0.58) 100%)",
-    border: "1px solid rgba(255,255,255,0.08)",
+      "linear-gradient(135deg, rgba(217,255,0,0.46) 0%, rgba(217,255,0,0.34) 100%)",
+    border: "1px solid rgba(217,255,0,0.55)",
     boxShadow:
-      "0 12px 40px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.06)",
+      "0 10px 32px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.35)",
   },
 };
 
@@ -196,7 +197,7 @@ export function CaptionOverlay({
 
   return (
     <motion.div
-      className="pointer-events-none absolute bottom-6 left-6 sm:bottom-10 sm:left-10 w-[33vw] min-w-[280px] rounded-3xl px-7 py-6 sm:px-10 sm:py-8 overflow-hidden z-40"
+      className="pointer-events-none absolute bottom-[44px] left-[44px] w-[24vw] min-w-[300px] rounded-[11px] px-7 pt-[34px] pb-8 overflow-hidden z-40"
       initial={{ y: OFFSCREEN_Y, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       exit={{ y: OFFSCREEN_Y, opacity: 0 }}
@@ -205,8 +206,8 @@ export function CaptionOverlay({
         opacity: { duration: 0.35, ease: "easeOut" },
       }}
       style={{
-        maxHeight: "72vh",
-        color: "#fafafa",
+        maxHeight: "65vh",
+        color: "#000000",
         fontFamily: "'FH Oscar', sans-serif",
         background: themeStyles.background,
         backdropFilter: "blur(22px) saturate(160%)",
@@ -216,12 +217,12 @@ export function CaptionOverlay({
       }}
     >
       {title ? (
-        <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold leading-tight">
+        <h2 className="text-[clamp(24px,1.9vw,34px)] leading-[1.29] font-medium tracking-tight">
           {title}
         </h2>
       ) : null}
       {subtitle ? (
-        <p className="mt-3 sm:mt-4 text-lg sm:text-xl md:text-2xl font-light opacity-90 leading-relaxed whitespace-pre-line">
+        <p className="mt-12 sm:mt-[56px] text-[clamp(15px,1.15vw,20px)] leading-[1.29] font-normal whitespace-pre-line">
           {subtitle}
         </p>
       ) : null}
