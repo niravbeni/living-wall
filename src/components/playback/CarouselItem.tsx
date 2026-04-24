@@ -38,7 +38,7 @@ interface CarouselItemProps {
   item: CarouselItemType;
   phase: PlaybackSlide["phase"];
   isActive: boolean;
-  onVideoEnded: () => void;
+  onVideoEnded: (endedItemId?: string) => void;
 }
 
 export function CarouselItemDisplay({
@@ -127,7 +127,7 @@ export function CarouselItemDisplay({
         muted
         playsInline
         loop={item.video_loop}
-        onEnded={onVideoEnded}
+        onEnded={() => onVideoEnded(item.id)}
       />
     );
   }

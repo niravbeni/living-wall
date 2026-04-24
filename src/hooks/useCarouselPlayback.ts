@@ -161,28 +161,51 @@ export function useCarouselPlayback(
     ]
   );
 
-  const onVideoEnded = useCallback(() => {
-    if (settings.auto_loop && !state.paused && slides.length > 0) {
+  const onVideoEnded = useCallback(
+    (endedItemId?: string) => {
+      // Non-looping videos rely exclusively on this callback to advance
+      // (the interval timer short-circuits on `isNonLoopingVideo`), so
+      // we intentionally DO NOT gate on `state.paused` here. Otherwise a
+      // press during the video (which flips auto_loop into its 15s
+      // manual-mode window) would leave the carousel stuck on the video
+      // final frame forever — `onEnded` would have fired once and been
+      // ignored, and nothing else can step the slide forward.
+      if (!settings.auto_loop || slides.length === 0) return;
+
+      // Stale-video guard: during a slide transition (AnimatePresence
+      // mode="sync") the outgoing video element is still mounted and can
+      // fire `onEnded` after we've already navigated elsewhere. If the
+      // id doesn't match the currently-visible slide, ignore the event.
+      const currentId = slides[safeIndex]?.item.id;
+      if (endedItemId && currentId && endedItemId !== currentId) return;
+
       lockedRef.current = false;
       if (lockTimeoutRef.current) clearTimeout(lockTimeoutRef.current);
       clearTimer();
+      clearIdleTimer();
       lock(settings.transition_duration_ms + 50);
       setState((prev) => ({
         ...prev,
         currentIndex: (prev.currentIndex + 1) % slides.length,
         progress: 0,
         direction: 1,
+        // A video that ran to completion fulfils whatever the user's
+        // 15s manual-mode window was holding them on, so resume
+        // auto-loop cleanly instead of sitting paused on the last frame.
+        paused: false,
       }));
       startTimeRef.current = Date.now();
-    }
-  }, [
-    settings.auto_loop,
-    settings.transition_duration_ms,
-    state.paused,
-    slides.length,
-    clearTimer,
-    lock,
-  ]);
+    },
+    [
+      settings.auto_loop,
+      settings.transition_duration_ms,
+      slides,
+      safeIndex,
+      clearTimer,
+      clearIdleTimer,
+      lock,
+    ]
+  );
 
   useEffect(() => {
     clearTimer();
